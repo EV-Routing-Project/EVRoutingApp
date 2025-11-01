@@ -31,6 +31,7 @@ class GeoNode(val parent: GeoNode? = null) {
             stations = null
         }
     }
+    fun count(): Int = cnt.sum()
     fun getChildIndex(value: Long): Int {
         val idx: Long = (value shr level) and 1
         return idx.toInt()

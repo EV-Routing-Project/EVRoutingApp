@@ -10,4 +10,5 @@ class GeoBitTrie {
         val node = mapGeoStation.get(station)
         node?.delete(station)
     }
+    fun count(): Int = root.count()
 }
