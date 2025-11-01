@@ -1,5 +1,5 @@
 package com.quest.evrounting.algorithm.geo
 
-class GeoStation {
+class GeoStation(val geohash: Long) {
 
 }
