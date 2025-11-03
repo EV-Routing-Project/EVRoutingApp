@@ -5,4 +5,5 @@ plugins {
     alias(libs.plugins.kotlin.compose) apply false
     alias(libs.plugins.jetbrains.kotlin.jvm) apply false
     alias(libs.plugins.secrets.gradle.plugin) apply false
+    alias(libs.plugins.kotlin.serialization) apply false
 }

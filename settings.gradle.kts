@@ -23,3 +23,4 @@ rootProject.name = "EV Rounting App"
 include(":app")
 include(":core:algorithm")
 include(":core:data")
+include(":utils:apiservice")
