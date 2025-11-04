@@ -13,3 +13,11 @@ kotlin {
         jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11
     }
 }
+
+dependencies{
+    implementation(project(":utils:apiservice"))
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.retrofit)
+    implementation(libs.spatialk.geojson)
+    implementation(libs.kotlin.polyline)
+}
