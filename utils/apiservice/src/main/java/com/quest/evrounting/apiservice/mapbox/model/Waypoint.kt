@@ -1,4 +1,4 @@
-package com.quest.evrounting.apiservice.mapbox.models
+package com.quest.evrounting.apiservice.mapbox.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

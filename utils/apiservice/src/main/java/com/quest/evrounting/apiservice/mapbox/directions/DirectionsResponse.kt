@@ -1,8 +1,8 @@
 package com.quest.evrounting.apiservice.mapbox.directions
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import com.quest.evrounting.apiservice.mapbox.models.Route
-import com.quest.evrounting.apiservice.mapbox.models.Waypoint
+import com.quest.evrounting.apiservice.mapbox.model.Route
+import com.quest.evrounting.apiservice.mapbox.model.Waypoint
 @Serializable
 data class DirectionsResponse(
     @SerialName("routes") val routes: List<Route>,
