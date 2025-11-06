@@ -1,4 +1,4 @@
-package com.quest.evrounting.libservice.spatial.model
+package com.quest.evrounting.libservice.geometry.model
 
 data class LineString(val coordinates: List<Point>) : Geometry {
 //  Create with Point

@@ -1,15 +1,15 @@
-package com.quest.evrounting.libservice.spatial.utils
+package com.quest.evrounting.libservice.geometry.utils
 
 import org.maplibre.spatialk.geojson.Geometry as SpatialKGeometry
-import com.quest.evrounting.libservice.spatial.model.Geometry as DomainGeometry
+import com.quest.evrounting.libservice.geometry.model.Geometry as DomainGeometry
 import org.maplibre.spatialk.geojson.Position as SpatialKPosition
-import com.quest.evrounting.libservice.spatial.model.Position as DomainPosition
+import com.quest.evrounting.libservice.geometry.model.Position as DomainPosition
 import org.maplibre.spatialk.geojson.Point as SpatialKPoint
-import com.quest.evrounting.libservice.spatial.model.Point as DomainPoint
+import com.quest.evrounting.libservice.geometry.model.Point as DomainPoint
 import org.maplibre.spatialk.geojson.LineString as SpatialKLineString
-import com.quest.evrounting.libservice.spatial.model.LineString as DomainLineString
+import com.quest.evrounting.libservice.geometry.model.LineString as DomainLineString
 import org.maplibre.spatialk.geojson.Polygon as SpatialKPolygon
-import com.quest.evrounting.libservice.spatial.model.Polygon as DomainPolygon
+import com.quest.evrounting.libservice.geometry.model.Polygon as DomainPolygon
 
 //Geometry
 fun DomainGeometry.toSpatialK() : SpatialKGeometry {

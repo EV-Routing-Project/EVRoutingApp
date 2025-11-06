@@ -1,4 +1,4 @@
-package com.quest.evrounting.libservice.spatial.model
+package com.quest.evrounting.libservice.geometry.model
 
 data class Polygon(val edges: List<LineString>) : Geometry {
 //  Create with LineString
