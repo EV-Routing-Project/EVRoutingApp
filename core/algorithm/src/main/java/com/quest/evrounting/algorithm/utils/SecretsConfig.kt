@@ -2,9 +2,6 @@ package com.quest.evrounting.algorithm.utils
 
 import com.quest.evrounting.apiservice.mapbox.MapboxApiClient
 import kotlinx.coroutines.runBlocking
-import kotlin.io.path.div
-
-import kotlinx.coroutines.runBlocking
 
 /**
  * Lớp này tạm thời được dùng để chứa hàm main, phục vụ việc test nhanh API.
