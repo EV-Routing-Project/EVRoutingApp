@@ -1,7 +1,6 @@
 package com.quest.evrounting.data.model.staticc
 
 import com.quest.evrounting.data.model.reference.Operators
-import com.quest.evrounting.data.model.reference.StatusTypes
 import com.quest.evrounting.data.model.reference.UsageTypes
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.javatime.datetime // Sử dụng thư viện cho Date/Time
@@ -32,24 +31,12 @@ object ChargePoints : Table("ChargePoint") {
         onUpdate = ReferenceOption.CASCADE
     ).nullable()
 
-    val statusTypeId = reference(
-        "StatusTypeID",
-        StatusTypes.id,
-        onDelete = ReferenceOption.RESTRICT,
-        onUpdate = ReferenceOption.CASCADE
-    ).nullable()
-
-    val numberOfPoints = integer("NumberOfPoints").nullable()
-
-    val dateLastStatusUpdate = datetime("DateLastStatusUpdate").nullable()
-
     override val primaryKey = PrimaryKey(id)
 
     // Bổ sung khối init để khai báo tường minh các chỉ mục cho khóa ngoại
     init {
         index(isUnique = false, addressInfoId)
         index(isUnique = false, operatorId)
-        index(isUnique = false, statusTypeId)
         index(isUnique = false, usageTypeId)
     }
 }
@@ -61,7 +48,4 @@ data class ChargePoint(
     val addressInfoId: Int,
     val operatorId: Int?,
     val usageTypeId: Int?,
-    val numberOfPoints: Int?,
-    val statusTypeId: Int?,
-    val dateLastStatusUpdate: java.time.LocalDateTime?
 )

@@ -2,11 +2,10 @@ package com.quest.evrounting.data.model.staticc
 
 import com.quest.evrounting.data.model.reference.ConnectionTypes
 import com.quest.evrounting.data.model.reference.CurrentTypes
-import com.quest.evrounting.data.model.reference.StatusTypes
 import org.jetbrains.exposed.sql.*
 
 object Connections : Table("Connections") {
-    val id = integer("ID").autoIncrement()
+    val id = integer("ID")
 
     val chargePointId = reference(
         "ChargePointID",
@@ -29,22 +28,16 @@ object Connections : Table("Connections") {
         onUpdate = ReferenceOption.CASCADE
     ).nullable()
 
-    val statusTypeId = reference(
-        "StatusTypeID",
-        StatusTypes.id,
-        onDelete = ReferenceOption.RESTRICT,
-        onUpdate = ReferenceOption.CASCADE
-    ).nullable()
-
     val powerKw = double("PowerKW").nullable()
     val quantity = integer("Quantity").nullable()
+
+    override val primaryKey = PrimaryKey(id)
 
     // Khai báo tường minh các chỉ mục cho khóa ngoại để code rõ ràng
     init {
         index(isUnique = false, chargePointId)
         index(isUnique = false, connectionTypeId)
         index(isUnique = false, currentTypeId)
-        index(isUnique = false, statusTypeId)
     }
 }
 
@@ -54,7 +47,6 @@ data class Connection(
     val chargePointId: Int,
     val connectionTypeId: Int,
     val currentTypeId: Int?,
-    val statusTypeId: Int?,
     val powerKw: Double?,
     val quantity: Int?
 )

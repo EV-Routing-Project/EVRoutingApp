@@ -22,4 +22,9 @@ dependencies {
 
     // Logging
     implementation(libs.slf4j.simple)
+
+    // Thư viện cho Retrofit và OkHttp
+    implementation(libs.retrofit.core)
+    implementation(libs.retrofit.converter.gson)
+    implementation(libs.okhttp.logging.interceptor)
 }

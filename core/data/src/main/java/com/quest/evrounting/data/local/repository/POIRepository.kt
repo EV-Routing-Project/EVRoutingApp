@@ -1,10 +1,10 @@
 package com.quest.evrounting.data.local.repository
 
+import com.quest.evrounting.data.model.dynamic.*
 import com.quest.evrounting.data.model.staticc.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 
 
@@ -21,9 +21,6 @@ object POIRepository {
         addressInfoId = row[ChargePoints.addressInfoId],
         operatorId = row[ChargePoints.operatorId],
         usageTypeId = row[ChargePoints.usageTypeId],
-        numberOfPoints = row[ChargePoints.numberOfPoints],
-        statusTypeId = row[ChargePoints.statusTypeId],
-        dateLastStatusUpdate = row[ChargePoints.dateLastStatusUpdate]
     )
 
     private fun toConnection(row: ResultRow): Connection = Connection(
@@ -31,7 +28,6 @@ object POIRepository {
         chargePointId = row[Connections.chargePointId],
         connectionTypeId = row[Connections.connectionTypeId],
         currentTypeId = row[Connections.currentTypeId],
-        statusTypeId = row[Connections.statusTypeId],
         powerKw = row[Connections.powerKw],
         quantity = row[Connections.quantity]
     )
@@ -61,7 +57,7 @@ object POIRepository {
         addressInfos: List<AddressInfo>,
         connections: List<Connection>
     ) {
-        newSuspendedTransaction <Unit> {
+        newSuspendedTransaction<Unit> {
             AddressInfos.batchUpsert(addressInfos) { address ->
                 this[AddressInfos.id] = address.id
                 this[AddressInfos.title] = address.title
@@ -81,19 +77,36 @@ object POIRepository {
                 this[ChargePoints.addressInfoId] = chargePoint.addressInfoId
                 this[ChargePoints.operatorId] = chargePoint.operatorId
                 this[ChargePoints.usageTypeId] = chargePoint.usageTypeId
-                this[ChargePoints.numberOfPoints] = chargePoint.numberOfPoints
-                this[ChargePoints.statusTypeId] = chargePoint.statusTypeId
-                this[ChargePoints.dateLastStatusUpdate] = chargePoint.dateLastStatusUpdate
             }
 
-            Connections.batchInsert(connections) { connection ->
+            Connections.batchUpsert(connections) { connection ->
                 this[Connections.id] = connection.id
                 this[Connections.chargePointId] = connection.chargePointId
                 this[Connections.connectionTypeId] = connection.connectionTypeId
                 this[Connections.currentTypeId] = connection.currentTypeId
-                this[Connections.statusTypeId] = connection.statusTypeId
                 this[Connections.powerKw] = connection.powerKw
                 this[Connections.quantity] = connection.quantity
+            }
+
+            // Khởi tạo trạng thái ban đầu trong PortStatusLog
+            val initialLogs = connections.map { conn ->
+                PortStatusLog(
+                    logId = 0, // Sẽ được tự động tạo
+                    connectionId = conn.id,
+                    // Ban đầu, tất cả các cổng đều còn trống
+                    availablePorts = conn.quantity ?: 1,
+                    // Mốc thời gian bắt đầu mô phỏng
+                    simulationTimestamp = 0L
+                )
+            }
+
+            // Chèn các bản ghi log ban đầu
+            if (initialLogs.isNotEmpty()) {
+                PortStatusLogs.batchInsert(initialLogs) { log ->
+                    this[PortStatusLogs.connectionId] = log.connectionId
+                    this[PortStatusLogs.availablePorts] = log.availablePorts
+                    this[PortStatusLogs.simulationTimestamp] = log.simulationTimestamp
+                }
             }
         }
     }

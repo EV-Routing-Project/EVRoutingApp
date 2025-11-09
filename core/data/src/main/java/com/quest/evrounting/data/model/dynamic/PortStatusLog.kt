@@ -1,7 +1,7 @@
 package com.quest.evrounting.data.model.dynamic
 
+import com.quest.evrounting.data.model.staticc.Connections
 import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.javatime.datetime
 
 /**
  * Bảng này lưu trữ nhật ký (log) các thay đổi trạng thái của mỗi cổng sạc vật lý.
@@ -9,46 +9,33 @@ import org.jetbrains.exposed.sql.javatime.datetime
 object PortStatusLogs : Table("PortStatusLog") {
     val logId = integer("LogID").autoIncrement()
 
-    val portUID = reference(
-        "PortUID",
-        LivePortStatuses.portUID,
+    val connectionId = reference(
+        "ConnectionID",
+        Connections.id,
         onDelete = ReferenceOption.CASCADE,
         onUpdate = ReferenceOption.CASCADE
     )
 
-    /**
-     * Thời điểm thực tế (real-world time) mà sự kiện thay đổi trạng thái xảy ra.
-     */
-    val timestamp = datetime("Timestamp")
+    // Số lượng cổng sạc còn trống
+    val availablePorts = integer("AvailablePorts")
 
     /**
      * Thời gian mô phỏng, tính bằng đơn vị (giây/phút) từ lúc bắt đầu.
      */
     val simulationTimestamp = long("SimulationTimestamp")
 
-    /**
-     * Trạng thái mới của cổng sau sự kiện (true = bận, false = trống).
-     */
-    val newStatus = bool("NewStatus")
-
-    /**
-     * Mô tả bằng chữ về sự kiện để dễ đọc.
-     */
-    val eventDescription = varchar("EventDescription", 255).nullable()
+    override val primaryKey = PrimaryKey(logId)
 
     init {
-        index(isUnique = false, portUID)
-        index(isUnique = false, timestamp)
+        index(isUnique = false, connectionId)
         index(isUnique = false, simulationTimestamp)
     }
 }
 
 data class PortStatusLog(
-    val logId: Int,
-    val portUID: String,
-    val timestamp: java.time.LocalDateTime,
+    val logId: Int = 0,
+    val connectionId: Int,
+    val availablePorts: Int,
     val simulationTimestamp: Long,
-    val newStatus: Boolean,
-    val eventDescription: String?
 )
 

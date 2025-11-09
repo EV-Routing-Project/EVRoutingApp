@@ -36,12 +36,6 @@ object ReferenceRepository {
         title = row[CurrentTypes.title]
     )
 
-    private fun toStatusType(row: ResultRow): StatusType = StatusType(
-        id = row[StatusTypes.id],
-        title = row[StatusTypes.title],
-        isOperational = row[StatusTypes.isOperational],
-    )
-
     private fun toUsageType(row: ResultRow): UsageType = UsageType(
         id = row[UsageTypes.id],
         title = row[UsageTypes.title],
@@ -99,15 +93,6 @@ object ReferenceRepository {
         }
     }
 
-    suspend fun upsertStatusTypes(statusTypes: List<StatusType>) {
-        newSuspendedTransaction<Unit> {
-            StatusTypes.batchUpsert(statusTypes) { type ->
-                this[StatusTypes.id] = type.id
-                this[StatusTypes.title] = type.title
-                this[StatusTypes.isOperational] = type.isOperational
-            }
-        }
-    }
 //endregion
 
 
@@ -159,14 +144,6 @@ object ReferenceRepository {
         emit(items)
     }
 
-    fun getAllStatusTypes(): Flow<List<StatusType>> = flow {
-        val items = newSuspendedTransaction {
-            StatusTypes.selectAll()
-                .orderBy(StatusTypes.title to SortOrder.ASC)
-                .map(::toStatusType)
-        }
-        emit(items)
-    }
     //endregion
 }
 

@@ -5,7 +5,7 @@ import org.jetbrains.exposed.sql.*
 
 
 object AddressInfos : Table("AddressInfo") {
-    val id = integer("ID").autoIncrement()
+    val id = integer("ID")
     val title = varchar("Title", 255)
     val addressLine1 = varchar("AddressLine1", 500).nullable()
     val town = varchar("Town", 100).nullable()
