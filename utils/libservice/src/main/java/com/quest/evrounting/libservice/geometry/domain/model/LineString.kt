@@ -1,4 +1,4 @@
-package com.quest.evrounting.libservice.geometry.model
+package com.quest.evrounting.libservice.geometry.domain.model
 
 import kotlinx.serialization.Serializable
 

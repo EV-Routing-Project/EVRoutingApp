@@ -1,6 +1,5 @@
-package com.quest.evrounting.libservice.geometry.model
+package com.quest.evrounting.libservice.geometry.domain.model
 
-import com.google.gson.Gson
 import kotlinx.serialization.Serializable
 
 /**

@@ -2,7 +2,7 @@ package com.quest.evrounting.libservice.geometry.utils
 
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import com.quest.evrounting.libservice.geometry.model.Geometry
+import com.quest.evrounting.libservice.geometry.domain.model.Geometry
 
 /**
  * Encodes a [Geometry] object into its GeoJSON string representation.
