@@ -1,11 +1,13 @@
-package com.quest.evrounting.algorithm.geo
+package com.quest.evrounting.algorithm.geospatial.model
 
-class GeoNode(val parent: GeoNode? = null) {
+import com.quest.evrounting.algorithm.geospatial.utils.GeoUtils
+
+class GeoNode<T>(val parent: GeoNode<T>? = null) {
     val level: Int
     val isEnd: Boolean
-    val children: Array<GeoNode?>
+    val children: Array<GeoNode<T>?>
     val cnt: Array<Int>
-    val stations: MutableSet<GeoStation>?
+    val leafs: MutableSet<GeoLeaf<T>>?
     init {
         if (parent != null) {
             level = parent.level - 1
@@ -26,9 +28,9 @@ class GeoNode(val parent: GeoNode? = null) {
             cnt = arrayOf(0, 0)
         }
         if(isEnd or (level == GeoUtils.GROUP_LEVEL)){
-            stations = mutableSetOf()
+            leafs = mutableSetOf()
         } else {
-            stations = null
+            leafs = null
         }
     }
     fun count(): Int = cnt.sum()
@@ -37,28 +39,28 @@ class GeoNode(val parent: GeoNode? = null) {
         return idx.toInt()
     }
 
-    fun insert(station: GeoStation): GeoNode? {
-        stations?.add(station)
+    fun insert(leaf: GeoLeaf<T>): GeoNode<T>? {
+        leafs?.add(leaf)
         if(this.isEnd) {
             cnt[0]++
             return this
         }
         // Logic
-        val idx = getChildIndex(station.geohash)
+        val idx = getChildIndex(leaf.geohash)
         cnt[idx]++
         if(children[idx] == null){
             children[idx] = GeoNode(this)
         }
-        return children[idx]?.insert(station)
+        return children[idx]?.insert(leaf)
     }
-    fun delete(station: GeoStation) {
-        stations?.remove(station)
+    fun delete(leaf: GeoLeaf<T>) {
+        leafs?.remove(leaf)
         if(this.isEnd){
             cnt[0]--;
         } else {
-            val idx = getChildIndex(station.geohash)
+            val idx = getChildIndex(leaf.geohash)
             cnt[idx]--
         }
-        parent?.delete(station)
+        parent?.delete(leaf)
     }
 }

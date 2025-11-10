@@ -1,4 +1,6 @@
-package com.quest.evrounting.algorithm.geo
+package com.quest.evrounting.algorithm.geospatial.model
+
+import com.quest.evrounting.algorithm.geospatial.model.GeoNode
 
 class GeoBitTrie {
     val root: GeoNode = GeoNode();
