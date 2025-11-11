@@ -2,65 +2,45 @@ package com.quest.evrounting.algorithm.geospatial.model
 
 import com.quest.evrounting.algorithm.geospatial.utils.GeoUtils
 
-class GeoNode<T>(val parent: GeoNode<T>? = null) {
-    val level: Int
-    val isEnd: Boolean
-    val children: Array<GeoNode<T>?>
-    val cnt: Array<Int>
-    val leafs: MutableSet<GeoLeaf<T>>?
-    init {
-        if (parent != null) {
-            level = parent.level - 1
-            if (level == 0) {
-                isEnd = true
-            } else {
-                isEnd = false
+class GeoNode(
+    val parent: GeoNode? = null,
+    val level: Int,
+    val isLeaf: Boolean,
+    val children: Array<GeoNode?>? = arrayOfNulls(2),
+    val cnt: Array<Int> = arrayOf(0, 0),
+    val entities: MutableSet<BaseGeoEntity>? = null
+) {
+    companion object {
+        fun createRoot() : GeoNode {
+            return GeoNode(
+                null,
+                GeoUtils.MAX_LEVEL,
+                false,
+                entities = mutableSetOf()
+            )
+        }
+
+        fun createFrom(parent: GeoNode) : GeoNode? {
+            if(parent.level == GeoUtils.MIN_LEVEL) return null
+            val level = parent.level - 1
+            var entities: MutableSet<BaseGeoEntity>? = null
+            var children: Array<GeoNode?>? = arrayOfNulls(2)
+            if(level == GeoUtils.MIN_LEVEL) {
+                entities = mutableSetOf()
+                children = null
             }
-        } else {
-            level = GeoUtils.MAX_LEVEL
-            isEnd = false
-        }
-        if(isEnd){
-            children = arrayOfNulls(0)
-            cnt = arrayOf(0)
-        } else {
-            children = arrayOfNulls(2)
-            cnt = arrayOf(0, 0)
-        }
-        if(isEnd or (level == GeoUtils.GROUP_LEVEL)){
-            leafs = mutableSetOf()
-        } else {
-            leafs = null
+            return GeoNode(
+                parent,
+                level,
+                isLeaf = (level == GeoUtils.MIN_LEVEL),
+                entities = entities,
+                children = children
+            )
         }
     }
     fun count(): Int = cnt.sum()
-    fun getChildIndex(value: Long): Int {
-        val idx: Long = (value shr level) and 1
+    fun getIndexOfEntity(entity: BaseGeoEntity): Int {
+        val idx: Long = (entity.geohash shr this.level) and 1
         return idx.toInt()
-    }
-
-    fun insert(leaf: GeoLeaf<T>): GeoNode<T>? {
-        leafs?.add(leaf)
-        if(this.isEnd) {
-            cnt[0]++
-            return this
-        }
-        // Logic
-        val idx = getChildIndex(leaf.geohash)
-        cnt[idx]++
-        if(children[idx] == null){
-            children[idx] = GeoNode(this)
-        }
-        return children[idx]?.insert(leaf)
-    }
-    fun delete(leaf: GeoLeaf<T>) {
-        leafs?.remove(leaf)
-        if(this.isEnd){
-            cnt[0]--;
-        } else {
-            val idx = getChildIndex(leaf.geohash)
-            cnt[idx]--
-        }
-        parent?.delete(leaf)
     }
 }
