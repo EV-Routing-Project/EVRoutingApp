@@ -2,6 +2,7 @@ package com.quest.evrounting.libservice.geometry.domain.port
 
 import com.quest.evrounting.libservice.geometry.domain.model.Geohash
 import com.quest.evrounting.libservice.geometry.domain.model.Point
+import com.quest.evrounting.libservice.geometry.domain.unit.GeometryUnit
 
 interface GeohashPort {
     fun getAdjacent(geohash: Geohash): List<Geohash>
