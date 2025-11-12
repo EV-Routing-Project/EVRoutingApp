@@ -5,12 +5,14 @@ import com.quest.evrounting.libservice.geometry.domain.model.Geometry as DomainG
 import com.quest.evrounting.libservice.geometry.domain.model.Point as DomainPoint
 import com.quest.evrounting.libservice.geometry.domain.model.LineString as DomainLineString
 import com.quest.evrounting.libservice.geometry.domain.model.Polygon as DomainPolygon
+import com.quest.evrounting.libservice.geometry.domain.model.Geohash as DomainGeohash
 
-//MAPBOX GEOMETRY JSON
+//EXTERNAL GEOMETRY JSON
 import com.mapbox.geojson.Geometry as ExternalGeometry
 import com.mapbox.geojson.Point as ExternalPoint
 import com.mapbox.geojson.LineString as ExternalLineString
 import com.mapbox.geojson.Polygon as ExternalPolygon
+import ch.hsr.geohash.GeoHash as ExternalGeohash
 
 
 //Geometry
@@ -74,4 +76,13 @@ fun ExternalPolygon.toDomain(): DomainPolygon {
         }
     }
     return DomainPolygon(domainEdges)
+}
+
+//Geohash
+fun DomainGeohash.toExternal(): ExternalGeohash {
+    return ExternalGeohash.fromLongValue(this.value, this.significantBits)
+}
+
+fun ExternalGeohash.toDomain(): DomainGeohash {
+    return DomainGeohash(this.longValue(), this.significantBits())
 }

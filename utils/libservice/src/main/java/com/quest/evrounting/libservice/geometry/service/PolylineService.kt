@@ -5,7 +5,7 @@ import com.quest.evrounting.libservice.geometry.domain.model.LineString
 import com.quest.evrounting.libservice.geometry.domain.manager.PolylineManager
 
 object PolylineService {
-    val polylineManager: PolylineManager = ServiceLocator.polylineManager
+    private val polylineManager: PolylineManager = ServiceLocator.polylineManager
 
     fun decode(encodedPath: String): LineString? {
         return polylineManager.decode(encodedPath)
