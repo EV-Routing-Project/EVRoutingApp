@@ -1,4 +1,4 @@
-package com.quest.evrounting.libservice.geometry.external.mapper
+package com.quest.evrounting.libservice.geometry.infrastructure.mapper
 
 //DOMAIN GEOMETRY JSON
 import com.quest.evrounting.libservice.geometry.domain.model.Geometry as DomainGeometry

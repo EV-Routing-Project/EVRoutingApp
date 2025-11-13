@@ -1,6 +1,6 @@
 package com.quest.evrounting.libservice.geometry.service
 
-import com.quest.evrounting.libservice.geometry.external.di.ServiceLocator
+import com.quest.evrounting.libservice.geometry.infrastructure.di.ServiceLocator
 import com.quest.evrounting.libservice.geometry.domain.model.LineString
 import com.quest.evrounting.libservice.geometry.domain.manager.PolylineManager
 

@@ -1,7 +1,7 @@
-package com.quest.evrounting.libservice.geometry.external.adapter
+package com.quest.evrounting.libservice.geometry.infrastructure.adapter
 
-import com.quest.evrounting.libservice.geometry.external.mapper.toDomain
-import com.quest.evrounting.libservice.geometry.external.mapper.toExternal
+import com.quest.evrounting.libservice.geometry.infrastructure.mapper.toDomain
+import com.quest.evrounting.libservice.geometry.infrastructure.mapper.toExternal
 import com.quest.evrounting.libservice.geometry.domain.port.PolylinePort
 import com.quest.evrounting.libservice.geometry.domain.model.LineString
 import com.mapbox.geojson.utils.PolylineUtils as ExternalPolylineUtils

@@ -1,10 +1,10 @@
-package com.quest.evrounting.libservice.geometry.external.adapter
+package com.quest.evrounting.libservice.geometry.infrastructure.adapter
 
 import com.quest.evrounting.libservice.geometry.domain.port.MeasurementPort
 import com.mapbox.turf.TurfMeasurement
 import com.quest.evrounting.libservice.geometry.domain.model.LineString
 import com.quest.evrounting.libservice.geometry.domain.unit.GeometryUnit
-import com.quest.evrounting.libservice.geometry.external.mapper.toExternal
+import com.quest.evrounting.libservice.geometry.infrastructure.mapper.toExternal
 import com.quest.evrounting.libservice.geometry.domain.model.Point
 
 class MeasurementAdapter: MeasurementPort {

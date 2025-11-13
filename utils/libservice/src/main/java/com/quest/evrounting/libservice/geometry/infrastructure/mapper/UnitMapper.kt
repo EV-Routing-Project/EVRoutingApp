@@ -1,4 +1,4 @@
-package com.quest.evrounting.libservice.geometry.external.mapper
+package com.quest.evrounting.libservice.geometry.infrastructure.mapper
 
 import com.quest.evrounting.libservice.geometry.domain.unit.GeometryUnit
 import com.mapbox.turf.TurfConstants

@@ -1,11 +1,10 @@
-package com.quest.evrounting.libservice.geometry.external.adapter
+package com.quest.evrounting.libservice.geometry.infrastructure.adapter
 
 import com.quest.evrounting.libservice.geometry.domain.model.Point
 import com.quest.evrounting.libservice.geometry.domain.model.Geohash as DomainGeohash
 import com.quest.evrounting.libservice.geometry.domain.port.GeohashPort
-import com.quest.evrounting.libservice.geometry.domain.unit.GeometryUnit
-import com.quest.evrounting.libservice.geometry.external.mapper.toDomain
-import com.quest.evrounting.libservice.geometry.external.mapper.toExternal
+import com.quest.evrounting.libservice.geometry.infrastructure.mapper.toDomain
+import com.quest.evrounting.libservice.geometry.infrastructure.mapper.toExternal
 import ch.hsr.geohash.GeoHash as ExternalGeohash
 
 
