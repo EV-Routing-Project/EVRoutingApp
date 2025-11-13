@@ -1,10 +1,13 @@
 package com.quest.evrounting.algorithm.geospatial.model
 
 sealed class BaseGeoEntity : GeoEntity {
-    override var node: GeoNode? = null
-        set(value) {
-            if(field == null){
-                field = value
-            }
-        }
+    override fun equals(other: Any?): Boolean {
+        if(this === other) return true
+        if(other !is BaseGeoEntity) return false
+        return this.id == other.id
+    }
+
+    override fun hashCode(): Int {
+        return id.hashCode()
+    }
 }
