@@ -1,10 +1,10 @@
-package com.quest.evrounting.algorithm.geospatial.model
+package com.quest.evrounting.algorithm.spatial.model
 
-import com.quest.evrounting.algorithm.geospatial.utils.GeoUtils
+import com.quest.evrounting.algorithm.spatial.utils.GeoUtils
 import com.quest.evrounting.libservice.geometry.ServiceKit
 import kotlin.math.max
 
-class GeoBitTrie {
+class GeoBitTrie() {
     private val root: GeoNode = GeoNode.createRoot()
     private val geohashTools = ServiceKit.geohashService
     private val mapEntities: MutableMap<BaseGeoEntity, GeoNode> = mutableMapOf()
@@ -27,6 +27,12 @@ class GeoBitTrie {
             mapEntities[entity] = node
             node.entities?.add(entity)
             if(entity.status) node.onlEntities?.add(entity)
+        }
+    }
+
+    fun lateInit(listEntities : List<BaseGeoEntity>) {
+        for(entity in listEntities){
+            insert(entity)
         }
     }
 
@@ -69,6 +75,7 @@ class GeoBitTrie {
         }
     }
 
+    //<editor-fold desc="Query">
     /**
      * radius is in meters
      */
@@ -149,6 +156,8 @@ class GeoBitTrie {
         if(node == null) return 0
         return node.count()
     }
+
+    //</editor-fold>
 
     //<editor-fold desc="Class GeoNode">
     private class GeoNode(
