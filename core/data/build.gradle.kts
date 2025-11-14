@@ -6,7 +6,14 @@ java {
     targetCompatibility = JavaVersion.VERSION_11
 }
 
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11
+    }
+}
+
 dependencies {
+    implementation(project(":utils:apiservice"))
     // --- THƯ VIỆN EXPOSED ---
     implementation(libs.exposed.core)
     implementation(libs.exposed.dao)
@@ -24,7 +31,7 @@ dependencies {
     implementation(libs.slf4j.simple)
 
     // Thư viện cho Retrofit và OkHttp
-    implementation(libs.retrofit.core)
-    implementation(libs.retrofit.converter.gson)
-    implementation(libs.okhttp.logging.interceptor)
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.kotlinx.serialization)
+    implementation(libs.okhttp)
 }

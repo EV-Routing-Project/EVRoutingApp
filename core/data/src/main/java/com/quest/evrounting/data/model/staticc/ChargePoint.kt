@@ -15,7 +15,7 @@ object ChargePoints : Table("ChargePoint") {
         AddressInfos.id,
         onDelete = ReferenceOption.RESTRICT,
         onUpdate = ReferenceOption.CASCADE
-    )
+    ).uniqueIndex()       // Chỉ định cột này là khóa ngoại duy nhất
 
     val operatorId = reference(
         "OperatorID",

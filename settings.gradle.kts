@@ -16,6 +16,9 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven {
+            url = uri("https://api.mapbox.com/downloads/v2/releases/maven")
+        }
     }
 }
 
@@ -23,3 +26,5 @@ rootProject.name = "EV Rounting App"
 include(":app")
 include(":core:algorithm")
 include(":core:data")
+include(":utils:apiservice")
+include(":utils:libservice")
