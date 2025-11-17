@@ -33,21 +33,21 @@ data class Polygon(
             }
         }
     }
-    /**
-     * Secondary constructor to create a Polygon from a list of [LineString] objects.
-     * This is useful when the rings are generated dynamically into a list.
-     *
-     * @param rings A list of [LineString]s forming the polygon's rings.
-     */
-    constructor(rings: List<LineString>) : this(rings.map { it.coordinates })
-
-    /**
-     * Secondary constructor to create a Polygon from a variable number of [LineString] arguments.
-     * This provides a more convenient way to build a Polygon from existing LineString objects.
-     *
-     * @param rings The sequence of [LineString]s forming the polygon's rings.
-     */
-    constructor(vararg rings: LineString) : this(rings.toList())
+//    /**
+//     * Secondary constructor to create a Polygon from a list of [LineString] objects.
+//     * This is useful when the rings are generated dynamically into a list.
+//     *
+//     * @param rings A list of [LineString]s forming the polygon's rings.
+//     */
+//    constructor(rings: List<LineString>) : this(rings.map { it.coordinates })
+//
+//    /**
+//     * Secondary constructor to create a Polygon from a variable number of [LineString] arguments.
+//     * This provides a more convenient way to build a Polygon from existing LineString objects.
+//     *
+//     * @param rings The sequence of [LineString]s forming the polygon's rings.
+//     */
+//    constructor(vararg rings: LineString) : this(rings.toList())
     //</editor-fold>
 
     //<editor-fold desc="Static Properties">
