@@ -5,11 +5,15 @@ package com.quest.evrounting.data.mapper
 import com.quest.evrounting.apiservice.ocm.model.AddressInfo as AddressInfoApi
 import com.quest.evrounting.apiservice.ocm.model.Connections as ConnectionApi
 import com.quest.evrounting.apiservice.ocm.pois.PoisResponse as ChargePointApi
+import com.quest.evrounting.apiservice.ocm.model.Operator as OperatorApi
+import com.quest.evrounting.apiservice.ocm.model.UsageType as UsageTypeApi
+import com.quest.evrounting.apiservice.ocm.model.ConnectionType as ConnectionTypeApi
+import com.quest.evrounting.apiservice.ocm.model.CurrentType as CurrentTypeApi
+import com.quest.evrounting.apiservice.ocm.model.Country as CountryApi
 
 // Import các lớp Entity từ module database
-import com.quest.evrounting.data.model.staticc.AddressInfo
-import com.quest.evrounting.data.model.staticc.Connection
-import com.quest.evrounting.data.model.staticc.ChargePoint
+import com.quest.evrounting.data.model.staticc.*
+import com.quest.evrounting.data.model.reference.*
 
 /**
  * File này chứa các hàm mở rộng (extension functions) để chuyển đổi (map)
@@ -77,6 +81,44 @@ object ToEntity {
             powerKw = this.powerKW,
             currentTypeId = this.currentType?.id,
             quantity = this.quantity
+        )
+    }
+
+    fun CountryApi.toEntity(): Country {
+        return Country(
+            id = this.id,
+            title = this.title,
+            isoCode = this.isoCode,
+        )
+    }
+
+    fun ConnectionTypeApi.toEntity(): ConnectionType {
+        return ConnectionType(
+            id = this.id,
+            title = this.title,
+            formalName = this.formalName
+        )
+    }
+
+    fun CurrentTypeApi.toEntity(): CurrentType {
+        return CurrentType(
+            id = this.id,
+            title = this.title
+        )
+    }
+
+    fun OperatorApi.toEntity(): Operator {
+        return Operator(
+            id = this.id,
+            title = this.title,
+            websiteUrl = this.websiteURL
+        )
+    }
+
+    fun UsageTypeApi.toEntity(): UsageType {
+        return UsageType(
+            id = this.id,
+            title = this.title
         )
     }
 }

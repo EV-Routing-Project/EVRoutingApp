@@ -18,4 +18,5 @@ dependencies {
     implementation(libs.retrofit.converter.kotlinx.serialization)
     implementation(libs.okhttp)
     implementation(libs.kotlinx.coroutines.core)
+    implementation(project(":utils:libservice"))
 }

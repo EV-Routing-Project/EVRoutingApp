@@ -89,6 +89,7 @@ object POIRepository {
             }
 
             // Khởi tạo trạng thái ban đầu trong PortStatusLog
+            // (Trạng thái cho từng Connections ban đầu)
             val initialLogs = connections.map { conn ->
                 PortStatusLog(
                     logId = 0, // Sẽ được tự động tạo

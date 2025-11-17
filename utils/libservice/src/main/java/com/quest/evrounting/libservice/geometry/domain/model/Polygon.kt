@@ -1,4 +1,4 @@
-package com.quest.evrounting.libservice.geometry.model
+package com.quest.evrounting.libservice.geometry.domain.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -39,7 +39,11 @@ data class Polygon(
      *
      * @param rings A list of [LineString]s forming the polygon's rings.
      */
-    constructor(rings: List<LineString>) : this(rings.map { it.coordinates })
+
+
+
+//    constructor(rings: List<LineString>) : this(rings.map { it.coordinates })
+
 
     /**
      * Secondary constructor to create a Polygon from a variable number of [LineString] arguments.
@@ -47,7 +51,13 @@ data class Polygon(
      *
      * @param rings The sequence of [LineString]s forming the polygon's rings.
      */
-    constructor(vararg rings: LineString) : this(rings.toList())
+
+
+
+//    constructor(vararg rings: LineString) : this(rings.toList())
+
+
+
     //</editor-fold>
 
     //<editor-fold desc="Static Properties">

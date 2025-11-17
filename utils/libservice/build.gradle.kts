@@ -17,4 +17,5 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.mapbox.geojson)
     implementation(libs.mapbox.turf)
+    implementation(libs.geohash.java)
 }

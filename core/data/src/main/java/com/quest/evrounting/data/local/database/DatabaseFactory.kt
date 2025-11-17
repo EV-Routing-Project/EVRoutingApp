@@ -13,7 +13,6 @@ import org.jetbrains.exposed.sql.transactions.transaction
  * Singleton object chịu trách nhiệm khởi tạo và quản lý kết nối cơ sở dữ liệu.
  */
 object DatabaseFactory {
-
     fun createSchema() {
         // 1. Cấu hình thông tin kết nối đến MySQL
         val url = "jdbc:mysql://localhost:3306/ev_routing_db?useUnicode=true&serverTimezone=UTC"
@@ -45,19 +44,5 @@ object DatabaseFactory {
             )
             println("✅ Schema ev_routing_db đã được tạo thành công.")
         }
-    }
-
-    // Lưu ý: đoạn code này chỉ chạy 1 lần duy nhất
-    // Exposed sẽ không tạo lại bảng nếu chạy nhiều lần
-    @JvmStatic
-    fun main(args: Array<String>) {
-        println("🚀 Bắt đầu quá trình tạo schema thủ công...")
-        try {
-            createSchema()
-        } catch (e: Exception) {
-            println("🚨 Đã xảy ra lỗi trong quá trình tạo schema:")
-            e.printStackTrace()
-        }
-        println("🏁 Quá trình kết thúc.")
     }
 }

@@ -1,8 +1,8 @@
 package com.quest.evrounting.apiservice.ocm.model
 
-import com.quest.evrounting.apiservice.ocm.utility.GeoHash
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import com.quest.evrounting.libservice.geometry.service.GeohashService
 
 @Serializable
 data class AddressInfo(
@@ -17,5 +17,5 @@ data class AddressInfo(
     @SerialName("AccessComments") val accessComments: String? = null,
 
     @Transient // bỏ qua tìm kiếm thuộc tính này trong JSON
-    val geohash12: Long = GeoHash.encodeHashToLong(latitude, longitude, 12)
+    val geohash12: Long = GeohashService.encode(longitude, latitude, 60).value
 )
