@@ -1,4 +1,4 @@
-package com.quest.evrounting.algorithm.spatial.utils
+package com.quest.evrounting.algorithm.utils
 
 object GeoUtils {
       const val MAX_LEVEL: Int = 60

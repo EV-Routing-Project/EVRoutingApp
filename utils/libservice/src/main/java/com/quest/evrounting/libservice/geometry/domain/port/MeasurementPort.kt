@@ -1,7 +1,7 @@
 package com.quest.evrounting.libservice.geometry.domain.port
 
 import com.quest.evrounting.libservice.geometry.domain.model.LineString
-import com.quest.evrounting.libservice.geometry.domain.unit.GeometryUnit
+import com.quest.evrounting.libservice.geometry.utils.GeometryUnit
 import com.quest.evrounting.libservice.geometry.domain.model.Point
 
 interface MeasurementPort {

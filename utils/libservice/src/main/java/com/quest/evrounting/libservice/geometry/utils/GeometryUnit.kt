@@ -1,4 +1,4 @@
-package com.quest.evrounting.libservice.geometry.domain.unit
+package com.quest.evrounting.libservice.geometry.utils
 
 enum class GeometryUnit(val unitName: String) {
     UNIT_CENTIMETERS("centimeters"),

@@ -1,15 +1,17 @@
-package com.quest.evrounting.algorithm.spatial.model
+package com.quest.evrounting.algorithm.spatial.index
 
-import com.quest.evrounting.algorithm.spatial.utils.GeoUtils
-import com.quest.evrounting.libservice.geometry.ServiceKit
+import com.quest.evrounting.algorithm.domain.model.Geohash
+import com.quest.evrounting.algorithm.domain.model.Point
+import com.quest.evrounting.algorithm.domain.port.GeohashPort
+import com.quest.evrounting.algorithm.spatial.entity.BaseEntity
+import com.quest.evrounting.algorithm.utils.GeoUtils
 import kotlin.math.max
 
-class GeoBitTrie() {
+class GeoBitTrie(val geohashTools: GeohashPort) : IEntityManager {
     private val root: GeoNode = GeoNode.createRoot()
-    private val geohashTools = ServiceKit.geohashService
-    private val mapEntities: MutableMap<BaseGeoEntity, GeoNode> = mutableMapOf()
+    private val mapEntities: MutableMap<BaseEntity, GeoNode> = mutableMapOf()
     fun count(): Int = root.count()
-    fun insert(entity: BaseGeoEntity){
+    override fun insert(entity: BaseEntity){
         var node: GeoNode? = root
         while(node != null && !node.isLeaf){
             val idx = node.getIndexOfEntity(entity)
@@ -30,13 +32,7 @@ class GeoBitTrie() {
         }
     }
 
-    fun lateInit(listEntities : List<BaseGeoEntity>) {
-        for(entity in listEntities){
-            insert(entity)
-        }
-    }
-
-    fun delete(entity: BaseGeoEntity) {
+    override fun delete(entity: BaseEntity) {
         var node: GeoNode? = mapEntities.get(entity)
         if(node != null && node.isLeaf) {
             node.entities?.remove(entity)
@@ -50,7 +46,7 @@ class GeoBitTrie() {
         mapEntities.remove(entity)
     }
 
-    fun offEntity(entity: BaseGeoEntity){
+    override fun offEntity(entity: BaseEntity){
         if(!entity.status) return
         var node: GeoNode? = mapEntities.get(entity)
         if(node != null && node.isLeaf){
@@ -62,7 +58,7 @@ class GeoBitTrie() {
             node = node.parent
         }
     }
-    fun onlEntity(entity: BaseGeoEntity){
+    override fun onlEntity(entity: BaseEntity){
         if(entity.status) return
         var node: GeoNode? = mapEntities.get(entity)
         if(node != null && node.isLeaf){
@@ -79,10 +75,10 @@ class GeoBitTrie() {
     /**
      * radius is in meters
      */
-    fun getLevelOfRadius(radius: Double, lat: Double) : Int {
+    fun getLevelOfRadius(radius: Double, point: Point) : Int {
         for(i in (GeoUtils.MAX_LEVEL downTo GeoUtils.MIN_LEVEL)){
             val latSize = geohashTools.getLatSize(i)
-            val lonSize = geohashTools.getLonSize(i, lat)
+            val lonSize = geohashTools.getLonSize(i, point)
             if(2 * radius >= lonSize && lonSize >= radius){
                 if(2 * radius >= latSize){
                     return i
@@ -94,13 +90,13 @@ class GeoBitTrie() {
         return GeoUtils.MIN_LEVEL
     }
 
-    fun filter(radius: Double, lon: Double, lat: Double): List<BaseGeoEntity> {
-        val level = getLevelOfRadius(radius,lat)
-        val listEntity = mutableListOf<BaseGeoEntity>()
-        val listGeohash = geohashTools.getGeohashGridForPoint(lon, lat, level)
+    override fun filter(radius: Double, center: Point): List<BaseEntity> {
+        val level = getLevelOfRadius(radius,center)
+        val listEntity = mutableListOf<BaseEntity>()
+        val listGeohash = geohashTools.getGeohashGridForPoint(center, level)
         for(geohash in listGeohash){
             val hash = geohashTools.adjustGeohashPrecision(geohash, GeoUtils.SIGNIFICANT_BITS)
-            val node = getNodeFromGeohash(hash.value, level)
+            val node = getNodeFromGeohash(hash, level)
             if(node != null){
                 listEntity.addAll(getOnlEntityFromNode(node))
             }
@@ -108,19 +104,19 @@ class GeoBitTrie() {
         return listEntity
     }
 
-    fun count(radius: Double, lon: Double, lat: Double): Int {
-        val level = getLevelOfRadius(radius,lat)
+    override fun count(radius: Double, center: Point): Int {
+        val level = getLevelOfRadius(radius, center)
         var count = 0
-        val listGeohash = geohashTools.getGeohashGridForPoint(lon, lat, level)
+        val listGeohash = geohashTools.getGeohashGridForPoint(center, level)
         for(geohash in listGeohash){
             val hash = geohashTools.adjustGeohashPrecision(geohash, GeoUtils.SIGNIFICANT_BITS)
-            val node = getNodeFromGeohash(hash.value, level)
+            val node = getNodeFromGeohash(hash, level)
             count += countOnlEntityFromNode(node)
         }
         return count
     }
 
-    private fun getNodeFromGeohash(geohash: Long, level: Int): GeoNode? {
+    private fun getNodeFromGeohash(geohash: Geohash, level: Int): GeoNode? {
         var node: GeoNode? = root
         while(node != null && node.level != level){
             val idx = node.getIndexOfGeohash(geohash)
@@ -129,13 +125,13 @@ class GeoBitTrie() {
         return node
     }
 
-    private fun getOnlEntityFromNode(node: GeoNode?) : List<BaseGeoEntity> {
-        val listEntity = mutableListOf<BaseGeoEntity>()
+    private fun getOnlEntityFromNode(node: GeoNode?) : List<BaseEntity> {
+        val listEntity = mutableListOf<BaseEntity>()
         getOnlEntityFromNode(node, listEntity)
         return listEntity
     }
 
-    private fun getOnlEntityFromNode(node: GeoNode?, listEntity: MutableList<BaseGeoEntity>){
+    private fun getOnlEntityFromNode(node: GeoNode?, listEntity: MutableList<BaseEntity>){
         if(node == null) return
         if(node.isLeaf){
             if(node.onlEntities != null){
@@ -166,8 +162,8 @@ class GeoBitTrie() {
         val isLeaf: Boolean,
         val children: Array<GeoNode?>? = arrayOfNulls(2),
         val cnt: Array<Int> = arrayOf(0, 0),
-        val entities: MutableSet<BaseGeoEntity>? = null,
-        val onlEntities: MutableSet<BaseGeoEntity>? = null
+        val entities: MutableSet<BaseEntity>? = null,
+        val onlEntities: MutableSet<BaseEntity>? = null
     ) {
         companion object {
             fun createRoot() : GeoNode {
@@ -181,8 +177,8 @@ class GeoBitTrie() {
             fun createFrom(parent: GeoNode) : GeoNode? {
                 if(parent.level == GeoUtils.MIN_LEVEL) return null
                 val level = parent.level - 1
-                var entities: MutableSet<BaseGeoEntity>? = null
-                var onlEntities: MutableSet<BaseGeoEntity>? = null
+                var entities: MutableSet<BaseEntity>? = null
+                var onlEntities: MutableSet<BaseEntity>? = null
                 var children: Array<GeoNode?>? = arrayOfNulls(2)
                 if(level == GeoUtils.MIN_LEVEL) {
                     entities = mutableSetOf()
@@ -200,12 +196,12 @@ class GeoBitTrie() {
             }
         }
         fun count(): Int = cnt.sum()
-        fun getIndexOfEntity(entity: BaseGeoEntity): Int {
+        fun getIndexOfEntity(entity: BaseEntity): Int {
             return getIndexOfGeohash(entity.geohash)
         }
 
-        fun getIndexOfGeohash(geohash: Long): Int {
-            val idx: Long = (geohash shr this.level) and 1
+        fun getIndexOfGeohash(geohash: Geohash): Int {
+            val idx: Long = (geohash.value shr this.level) and 1
             return idx.toInt()
         }
     }

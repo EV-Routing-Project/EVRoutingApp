@@ -1,6 +1,6 @@
 package com.quest.evrounting.libservice.geometry.infrastructure.mapper
 
-import com.quest.evrounting.libservice.geometry.domain.unit.GeometryUnit
+import com.quest.evrounting.libservice.geometry.utils.GeometryUnit
 import com.mapbox.turf.TurfConstants
 
 fun GeometryUnit.toExternal(): String {
