@@ -8,11 +8,9 @@ interface IEntityManager {
 
     fun delete(entity: BaseEntity)
 
-    fun offEntity(entity: BaseEntity)
+    fun update(entity: BaseEntity)
 
-    fun onlEntity(entity: BaseEntity)
+    fun findEntityInsideCircle(radius: Double, point: Point) : List<BaseEntity>
 
-    fun filter(radius: Double, center: Point) : List<BaseEntity>
-
-    fun count(radius: Double, center: Point) : Int
+    fun estimatedCount(radius: Double, center: Point) : Int
 }

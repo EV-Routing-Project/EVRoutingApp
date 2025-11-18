@@ -3,11 +3,15 @@ package com.quest.evrounting.algorithm.spatial.index
 import com.quest.evrounting.algorithm.domain.model.Geohash
 import com.quest.evrounting.algorithm.domain.model.Point
 import com.quest.evrounting.algorithm.domain.port.GeohashPort
+import com.quest.evrounting.algorithm.domain.port.GeometryPort
 import com.quest.evrounting.algorithm.spatial.entity.BaseEntity
 import com.quest.evrounting.algorithm.utils.GeoUtils
 import kotlin.math.max
 
-class GeoBitTrie(val geohashTools: GeohashPort) : IEntityManager {
+class GeoBitTrie(
+    val geohashTool: GeohashPort,
+    val geometryTool: GeometryPort
+) : IEntityManager {
     private val root: GeoNode = GeoNode.createRoot()
     private val mapEntities: MutableMap<BaseEntity, GeoNode> = mutableMapOf()
     fun count(): Int = root.count()
@@ -46,7 +50,7 @@ class GeoBitTrie(val geohashTools: GeohashPort) : IEntityManager {
         mapEntities.remove(entity)
     }
 
-    override fun offEntity(entity: BaseEntity){
+    fun offEntity(entity: BaseEntity){
         if(!entity.status) return
         var node: GeoNode? = mapEntities.get(entity)
         if(node != null && node.isLeaf){
@@ -58,7 +62,7 @@ class GeoBitTrie(val geohashTools: GeohashPort) : IEntityManager {
             node = node.parent
         }
     }
-    override fun onlEntity(entity: BaseEntity){
+    fun onlEntity(entity: BaseEntity){
         if(entity.status) return
         var node: GeoNode? = mapEntities.get(entity)
         if(node != null && node.isLeaf){
@@ -71,14 +75,22 @@ class GeoBitTrie(val geohashTools: GeohashPort) : IEntityManager {
         }
     }
 
+    override fun update(entity: BaseEntity) {
+        if(entity.status){
+            onlEntity(entity)
+        } else {
+            offEntity(entity)
+        }
+    }
+
     //<editor-fold desc="Query">
     /**
      * radius is in meters
      */
     fun getLevelOfRadius(radius: Double, point: Point) : Int {
         for(i in (GeoUtils.MAX_LEVEL downTo GeoUtils.MIN_LEVEL)){
-            val latSize = geohashTools.getLatSize(i)
-            val lonSize = geohashTools.getLonSize(i, point)
+            val latSize = geohashTool.getLatSize(i)
+            val lonSize = geohashTool.getLonSize(i, point)
             if(2 * radius >= lonSize && lonSize >= radius){
                 if(2 * radius >= latSize){
                     return i
@@ -90,12 +102,12 @@ class GeoBitTrie(val geohashTools: GeohashPort) : IEntityManager {
         return GeoUtils.MIN_LEVEL
     }
 
-    override fun filter(radius: Double, center: Point): List<BaseEntity> {
+    fun filter(radius: Double, center: Point): List<BaseEntity> {
         val level = getLevelOfRadius(radius,center)
         val listEntity = mutableListOf<BaseEntity>()
-        val listGeohash = geohashTools.getGeohashGridForPoint(center, level)
+        val listGeohash = geohashTool.getGeohashGridForPoint(center, level)
         for(geohash in listGeohash){
-            val hash = geohashTools.adjustGeohashPrecision(geohash, GeoUtils.SIGNIFICANT_BITS)
+            val hash = geohashTool.adjustGeohashPrecision(geohash, GeoUtils.SIGNIFICANT_BITS)
             val node = getNodeFromGeohash(hash, level)
             if(node != null){
                 listEntity.addAll(getOnlEntityFromNode(node))
@@ -104,12 +116,24 @@ class GeoBitTrie(val geohashTools: GeohashPort) : IEntityManager {
         return listEntity
     }
 
-    override fun count(radius: Double, center: Point): Int {
+    override fun findEntityInsideCircle(radius: Double, point: Point): List<BaseEntity> {
+        if(estimatedCount(radius, point) == 0) return emptyList()
+        val entityFilterMap = filter(radius, point).associateBy { it.point }
+        return geometryTool.findPointsInsideCircle(
+            entityFilterMap.keys.toList(),
+            radius,
+            point
+        ).mapNotNull {
+                point -> entityFilterMap[point]
+        }
+    }
+
+    override fun estimatedCount(radius: Double, center: Point): Int {
         val level = getLevelOfRadius(radius, center)
         var count = 0
-        val listGeohash = geohashTools.getGeohashGridForPoint(center, level)
+        val listGeohash = geohashTool.getGeohashGridForPoint(center, level)
         for(geohash in listGeohash){
-            val hash = geohashTools.adjustGeohashPrecision(geohash, GeoUtils.SIGNIFICANT_BITS)
+            val hash = geohashTool.adjustGeohashPrecision(geohash, GeoUtils.SIGNIFICANT_BITS)
             val node = getNodeFromGeohash(hash, level)
             count += countOnlEntityFromNode(node)
         }
