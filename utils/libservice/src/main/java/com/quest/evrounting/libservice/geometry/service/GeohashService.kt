@@ -3,11 +3,10 @@ package com.quest.evrounting.libservice.geometry.service
 import com.quest.evrounting.libservice.geometry.domain.manager.GeohashManager
 import com.quest.evrounting.libservice.geometry.domain.model.Geohash
 import com.quest.evrounting.libservice.geometry.domain.model.Point
-import com.quest.evrounting.libservice.geometry.infrastructure.di.ServiceLocator
-import com.quest.evrounting.libservice.geometry.utils.GeometryConstants
+import com.quest.evrounting.libservice.geometry.infrastructure.config.Dependencies
 
 object GeohashService {
-    private val geohashManager: GeohashManager = ServiceLocator.geohashManager
+    private val geohashManager: GeohashManager = Dependencies.geohashManager
 
 //    fun createGeohashFromLongValue(value: Long, significantBits: Int): Geohash {
 //        return geohashManager.createGeohashFromLongValue(value, significantBits)
