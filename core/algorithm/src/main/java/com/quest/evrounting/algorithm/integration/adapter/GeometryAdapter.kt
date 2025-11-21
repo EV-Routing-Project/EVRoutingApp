@@ -14,11 +14,13 @@ class GeometryAdapter : GeometryPort {
         lat: Double,
         alt: Double
     ): Point? {
-        TODO("Not yet implemented")
+        return geometryService.createPoint(lon, lat, alt)?.toDomain()
     }
 
     override fun createLineString(points: List<Point>): LineString? {
-        TODO("Not yet implemented")
+        return geometryService.createLineString(points.map {
+            it.toExternal()
+        })?.toDomain()
     }
 
     override fun findPointsInsideCircle(
@@ -38,21 +40,24 @@ class GeometryAdapter : GeometryPort {
     }
 
     override fun getLengthOfPath(path: LineString): Double {
-        TODO("Not yet implemented")
+        return geometryService.getLengthOfPath(path.toExternal())
     }
 
     override fun findPathAlongPath(
         path: LineString,
         distanceAlong: Double
     ): LineString? {
-        TODO("Not yet implemented")
+        return geometryService.findPathAlongPath(
+            path.toExternal(),
+            distanceAlong)?.toDomain()
     }
 
     override fun findPointAlongPath(
         path: LineString,
         distanceAlong: Double
     ): Point? {
-        TODO("Not yet implemented")
+        return geometryService.findPointAlongPath(
+            path.toExternal(),
+            distanceAlong)?.toDomain()
     }
-
 }

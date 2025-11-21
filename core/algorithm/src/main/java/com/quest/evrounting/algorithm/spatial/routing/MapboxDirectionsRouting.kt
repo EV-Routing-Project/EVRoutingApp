@@ -1,16 +1,17 @@
-package com.quest.evrounting.algorithm.integration.adapter
+package com.quest.evrounting.algorithm.spatial.routing
 
 import com.quest.evrounting.algorithm.domain.model.LineString
 import com.quest.evrounting.algorithm.domain.model.Point
 import com.quest.evrounting.algorithm.domain.port.RoutingPort
-import com.quest.evrounting.algorithm.utils.RoutingProfile
 
-class RoutingAdapter : RoutingPort {
-    override fun findRoute(
+class MapboxDirectionsRouting(
+    val routingTool: RoutingPort
+) : IRoutingManager{
+    override fun findShortestPath(
         start: Point,
-        end: Point,
-        profile: RoutingProfile
+        end: Point
     ): LineString? {
         TODO("Not yet implemented")
     }
+
 }
