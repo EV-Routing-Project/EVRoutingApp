@@ -4,6 +4,7 @@ import com.quest.evrounting.algorithm.domain.model.LineString
 import com.quest.evrounting.algorithm.domain.model.Point
 import com.quest.evrounting.algorithm.domain.port.GeometryPort
 import com.quest.evrounting.algorithm.domain.port.RoutingPort
+import com.quest.evrounting.algorithm.utils.RoutingProfile
 
 class MapboxDirectionsRouting(
     val routingTool: RoutingPort,
@@ -11,9 +12,10 @@ class MapboxDirectionsRouting(
 ) : IRoutingManager{
     override fun findShortestPath(
         start: Point,
-        end: Point
+        end: Point,
+        profile: RoutingProfile
     ): LineString? {
-        TODO("Not yet implemented")
+        return routingTool.findRoute(start, end, profile)
     }
 
     override fun findPathAlongPath(
@@ -29,5 +31,4 @@ class MapboxDirectionsRouting(
     ): Point? {
         return geometryTool.findPointAlongPath(path, distanceAlong)
     }
-
 }
