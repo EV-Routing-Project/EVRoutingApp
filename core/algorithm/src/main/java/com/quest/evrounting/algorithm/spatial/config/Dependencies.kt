@@ -1,7 +1,9 @@
 package com.quest.evrounting.algorithm.spatial.config
 
+import com.quest.evrounting.algorithm.spatial.SpatialManager
 import com.quest.evrounting.algorithm.spatial.cache.ICacheManager
-import com.quest.evrounting.algorithm.spatial.cache.LineStringTrie
+import com.quest.evrounting.algorithm.spatial.cache.LineStringGraph
+import com.quest.evrounting.algorithm.spatial.entity.BaseEntity
 import com.quest.evrounting.algorithm.spatial.index.GeoBitTrie
 import com.quest.evrounting.algorithm.spatial.index.IEntityManager
 import com.quest.evrounting.algorithm.spatial.routing.IRoutingManager
@@ -16,13 +18,21 @@ object Dependencies {
             )
     }
     fun createCacheManager(): ICacheManager {
-        return LineStringTrie(
-            IntegrationDependencies.geometryTool
-        )
+        return LineStringGraph()
     }
     fun createRoutingManager(): IRoutingManager {
         return MapboxDirectionsRouting(
-            IntegrationDependencies.routingTool
+            IntegrationDependencies.routingTool,
+            IntegrationDependencies.geometryTool
+        )
+    }
+
+    fun createSpatialManager(entities: List<BaseEntity>): SpatialManager {
+        return SpatialManager(
+            createEntityManager(),
+            createCacheManager(),
+            createRoutingManager(),
+            entities
         )
     }
 }
