@@ -35,7 +35,7 @@ object PortStatusLogs : Table("PortStatusLog") {
 data class PortStatusLog(
     val logId: Int = 0,
     val connectionId: Int,
-    val availablePorts: Int,
-    val simulationTimestamp: Long,
+    var availablePorts: Int,
+    var simulationTimestamp: Long,
 )
 

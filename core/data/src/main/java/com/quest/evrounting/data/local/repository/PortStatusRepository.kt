@@ -4,6 +4,7 @@ import com.quest.evrounting.data.model.dynamic.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.greater
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 
 
@@ -19,7 +20,7 @@ object PortStatusRepository {
     /**
      * Ghi một sự kiện thay đổi số lượng cổng trống vào log.
      */
-    suspend fun insertPortStatusLog(logEntry: PortStatusLog) {
+    suspend fun insertNewState(logEntry: PortStatusLog) {
         newSuspendedTransaction<Unit> {
             PortStatusLogs.insert {
                 // logId sẽ được tự động tạo bởi cơ sở dữ liệu nên không cần điền logId
@@ -30,12 +31,12 @@ object PortStatusRepository {
         }
     }
 
+
     /**
      * Lấy trạng thái MỚI NHẤT (live status) của một loại cổng sạc (Connection).
-     * @param connectionId ID của bản ghi trong bảng Connections.
      * @return Một Flow chứa bản ghi log cuối cùng, hoặc null nếu chưa có.
      */
-    fun getLiveStatusForConnection(connectionId: Int): Flow<PortStatusLog?> = flow {
+    fun getLatestStatus(connectionId: Int): Flow<PortStatusLog?> = flow {
         val latestLog = newSuspendedTransaction {
             PortStatusLogs.selectAll().where { PortStatusLogs.connectionId eq connectionId }
                 .orderBy(PortStatusLogs.simulationTimestamp, SortOrder.DESC)
@@ -45,6 +46,27 @@ object PortStatusRepository {
         }
         emit(latestLog)
     }
+
+
+    /**
+     * Lấy trạng thái gần nhất của một nhóm cổng sạc TÍNH ĐẾN một thời điểm cụ thể.
+     * @return Một đối tượng PortStatusLog chứa trạng thái gần nhất, hoặc null nếu không tìm thấy.
+     */
+    suspend fun getLatestStatus(connectionId: Int, atTimestamp: Long): PortStatusLog? {
+        return newSuspendedTransaction {
+            PortStatusLogs
+                .selectAll()
+                .where {
+                    (PortStatusLogs.connectionId eq connectionId) and
+                            (PortStatusLogs.simulationTimestamp lessEq atTimestamp)
+                }
+                .orderBy(PortStatusLogs.simulationTimestamp, SortOrder.DESC)
+                .limit(1)
+                .map(::toPortStatusLog)
+                .singleOrNull()
+        }
+    }
+
 
     /**
      * Lấy trạng thái MỚI NHẤT của TẤT CẢ các loại cổng thuộc về một trạm sạc.
@@ -86,5 +108,20 @@ object PortStatusRepository {
             }
         }
         emit(latestLogs)
+    }
+
+
+    // hàm này sẽ giữ lại trạng thái khởi tạo
+    suspend fun clearSimulationLogs() {
+        newSuspendedTransaction {
+            PortStatusLogs.deleteWhere { PortStatusLogs.simulationTimestamp greater 0L }
+        }
+    }
+
+
+    suspend fun clearAllLogs() {
+        newSuspendedTransaction {
+            PortStatusLogs.deleteAll()
+        }
     }
 }

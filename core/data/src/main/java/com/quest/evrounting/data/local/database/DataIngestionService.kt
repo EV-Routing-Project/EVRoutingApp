@@ -6,6 +6,8 @@ import com.quest.evrounting.data.mapper.ToEntity.toEntity
 import com.quest.evrounting.data.remote.OcmApiCaller
 import kotlinx.coroutines.runBlocking
 
+
+// File này để lưu dữ liệu tĩnh từ API vào db
 object DataIngestionService {
     private const val API_KEY = "KEY"
 

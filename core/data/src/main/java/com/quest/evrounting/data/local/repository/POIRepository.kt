@@ -88,6 +88,12 @@ object POIRepository {
                 this[Connections.quantity] = connection.quantity
             }
 
+
+
+            PortStatusRepository.clearAllLogs()
+
+
+
             // Khởi tạo trạng thái ban đầu trong PortStatusLog
             // (Trạng thái cho từng Connections ban đầu)
             val initialLogs = connections.map { conn ->
@@ -116,52 +122,53 @@ object POIRepository {
     //region --- HÀM TRUY VẤN (GET) ---
 
     // --- Truy vấn ChargePoint ---
-    fun getAllChargePoints(): Flow<List<ChargePoint>> = flow {
-        val items = newSuspendedTransaction {
+    suspend fun getAllChargePoints(): List<ChargePoint> {
+        return newSuspendedTransaction {
             ChargePoints.selectAll().map(::toChargePoint)
         }
-        emit(items)
     }
 
-    fun getChargePointById(id: Int): Flow<ChargePoint?> = flow {
-        val item = newSuspendedTransaction {
+    suspend fun getAllConnetionIDs(): List<Int> {
+        return newSuspendedTransaction {
+            Connections.selectAll().map { it[Connections.id] }
+        }
+    }
+
+    suspend fun getChargePointById(id: Int): ChargePoint? {
+        return newSuspendedTransaction {
             ChargePoints.selectAll().where { ChargePoints.id eq id }
                 .limit(1)
                 .map(::toChargePoint)
                 .singleOrNull()
         }
-        emit(item)
     }
 
     // --- Truy vấn Connection ---
-    fun getConnectionsForChargePoint(chargePointId: Int): Flow<List<Connection>> = flow {
-        val items = newSuspendedTransaction {
+    suspend fun getConnectionsForChargePoint(chargePointId: Int): List<Connection> {
+        return newSuspendedTransaction {
             Connections.selectAll().where { Connections.chargePointId eq chargePointId }
                 .map(::toConnection)
         }
-        emit(items)
     }
 
-    fun getConnectionById(id: Int): Flow<Connection?> = flow {
-        val item = newSuspendedTransaction {
+    suspend fun getConnectionById(id: Int): Connection? {
+        return newSuspendedTransaction {
             Connections.selectAll().where { Connections.id eq id }
                 .limit(1)
                 .map(::toConnection)
                 .singleOrNull()
         }
-        emit(item)
     }
 
 
     // --- Truy vấn AddressInfo ---
-    fun getAddressInfoById(id: Int): Flow<AddressInfo?> = flow {
-        val item = newSuspendedTransaction {
+    suspend fun getAddressInfoById(id: Int): AddressInfo? {
+        return newSuspendedTransaction {
             AddressInfos.selectAll().where { AddressInfos.id eq id }
                 .limit(1)
                 .map(::toAddressInfo)
                 .singleOrNull()
         }
-        emit(item)
     }
 
     //endregion
