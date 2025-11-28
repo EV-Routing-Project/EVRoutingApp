@@ -1,13 +1,13 @@
-package com.quest.evrounting.algorithm.integration.config
+package com.quest.evrounting.algorithm.infrastructure.config
 
 import com.quest.evrounting.algorithm.domain.port.GeohashPort
 import com.quest.evrounting.algorithm.domain.port.GeometryPort
 import com.quest.evrounting.algorithm.domain.port.PolylinePort
 import com.quest.evrounting.algorithm.domain.port.RoutingPort
-import com.quest.evrounting.algorithm.integration.adapter.GeohashAdapter
-import com.quest.evrounting.algorithm.integration.adapter.GeometryAdapter
-import com.quest.evrounting.algorithm.integration.adapter.PolylineAdapter
-import com.quest.evrounting.algorithm.integration.adapter.RoutingAdapter
+import com.quest.evrounting.algorithm.infrastructure.adapter.GeohashAdapter
+import com.quest.evrounting.algorithm.infrastructure.adapter.GeometryAdapter
+import com.quest.evrounting.algorithm.infrastructure.adapter.PolylineAdapter
+import com.quest.evrounting.algorithm.infrastructure.adapter.RoutingAdapter
 
 
 object Dependencies {

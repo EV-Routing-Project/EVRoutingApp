@@ -1,4 +1,4 @@
-package com.quest.evrounting.algorithm.integration.adapter
+package com.quest.evrounting.algorithm.infrastructure.adapter
 
 import com.quest.evrounting.algorithm.domain.model.LineString
 import com.quest.evrounting.algorithm.domain.model.Point
@@ -21,7 +21,7 @@ class RoutingAdapter : RoutingPort {
             val directions = response.body()
             val route = directions?.routes?.firstOrNull()
             val coordinate = route?.geometry?.coordinates
-            if(coordinate != null)  return LineString(coordinate.map { Point(it[0], it[1]) })
+            if(coordinate != null)  return LineString(coordinate.map { Point(it[0], it[1]) }, route.distance)
         }
         return null
     }

@@ -8,7 +8,7 @@ package com.quest.evrounting.algorithm.domain.model
  * @property coordinates The list of [Point]s that form the line.
  * @throws IllegalArgumentException if the coordinates list contains fewer than two points.
  */
-data class LineString(val coordinates: List<Point>) : Geometry {
+data class LineString(val coordinates: List<Point>, val distance: Double = 0.0) : Geometry {
     //<editor-fold desc="Initialize and Constructors">
     init {
         require(coordinates.size >= 2){

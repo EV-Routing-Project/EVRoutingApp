@@ -1,10 +1,10 @@
-package com.quest.evrounting.algorithm.integration.adapter
+package com.quest.evrounting.algorithm.infrastructure.adapter
 
 import com.quest.evrounting.algorithm.domain.model.LineString
 import com.quest.evrounting.algorithm.domain.model.Point
 import com.quest.evrounting.algorithm.domain.port.GeometryPort
-import com.quest.evrounting.algorithm.integration.mapper.toDomain
-import com.quest.evrounting.algorithm.integration.mapper.toExternal
+import com.quest.evrounting.algorithm.infrastructure.mapper.toDomain
+import com.quest.evrounting.algorithm.infrastructure.mapper.toExternal
 import com.quest.evrounting.libservice.geometry.ServiceKit
 
 class GeometryAdapter : GeometryPort {
@@ -21,6 +21,13 @@ class GeometryAdapter : GeometryPort {
         return geometryService.createLineString(points.map {
             it.toExternal()
         })?.toDomain()
+    }
+
+    override fun getHaversineDistance(
+        start: Point,
+        end: Point
+    ): Double {
+        return geometryService.distance(start.toExternal(), end.toExternal())
     }
 
     override fun findPointsInsideCircle(

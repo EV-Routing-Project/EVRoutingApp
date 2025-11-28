@@ -1,4 +1,4 @@
-package com.quest.evrounting.algorithm.integration.mapper
+package com.quest.evrounting.algorithm.infrastructure.mapper
 
 import com.quest.evrounting.libservice.geometry.domain.model.Geometry as ExternalGeometry
 import com.quest.evrounting.libservice.geometry.domain.model.Point as ExternalPoint
