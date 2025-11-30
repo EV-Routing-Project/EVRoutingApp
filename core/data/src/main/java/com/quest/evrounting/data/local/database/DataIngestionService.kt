@@ -11,21 +11,17 @@ import kotlinx.coroutines.runBlocking
 object DataIngestionService {
     private const val API_KEY = "KEY"
 
-    suspend fun syncData() {
+    suspend fun syncData(key: String = API_KEY, url: String, driver: String, user: String, password: String) {
         println("🚀 Bắt đầu quá trình tạo schema...")
-        DatabaseFactory.createSchema()
+        DatabaseFactory.createSchema(url, driver, user, password)
 
         println("🚀 Bắt đầu quá trình đồng bộ dữ liệu từ OCM...")
-        // Gọi hàm mới và nhận về một đối tượng Result
-        val result = OcmApiCaller.fetchChargePoints(API_KEY)
+        val result = OcmApiCaller.fetchChargePoints(key)
 
         result.onSuccess { poisList ->
             println("✅ Nhận được ${poisList.size} trạm sạc. Bắt đầu quá trình mapping...")
 
-            // Chuyển đổi danh sách các trạm sạc (ChargePoint)
             val chargePointEntities = poisList.map { it.toEntity() }
-
-            // Chuyển đổi danh sách các thông tin địa chỉ (AddressInfo)
             val addressInfoEntities = poisList.map { chargePointApi ->
                 chargePointApi.addressInfo.toEntity()
             }
@@ -79,7 +75,12 @@ fun main() = runBlocking {
     println("==============================================")
 
     try {
-        DataIngestionService.syncData()
+        DataIngestionService.syncData(
+            url = DatabaseFactory.URL,
+            driver = DatabaseFactory.DRIVER,
+            user = DatabaseFactory.USER,
+            password = DatabaseFactory.PASSWORD
+        )
     } catch (e: Exception) {
         println("🚨 Đã xảy ra lỗi không mong muốn ở tầng cao nhất.")
         e.printStackTrace()

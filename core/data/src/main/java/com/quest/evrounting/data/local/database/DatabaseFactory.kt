@@ -13,18 +13,17 @@ import org.jetbrains.exposed.sql.transactions.transaction
  * Singleton object chịu trách nhiệm khởi tạo và quản lý kết nối cơ sở dữ liệu.
  */
 object DatabaseFactory {
+    const val URL = "jdbc:mysql://localhost:3306/ev_routing_db?useUnicode=true&serverTimezone=UTC"
+    const val DRIVER = "com.mysql.cj.jdbc.Driver"
+    const val USER = "root"
+    const val PASSWORD = "1234"
 
-    private const val URL = "jdbc:mysql://localhost:3306/ev_routing_db?useUnicode=true&serverTimezone=UTC"
-    private const val DRIVER = "com.mysql.cj.jdbc.Driver"
-    private const val USER = "root"
-    private const val PASSWORD = "1234"
-
-    fun connect(){
-        Database.connect(URL, DRIVER, USER, PASSWORD)
+    fun connect(url: String, driver: String, user: String, password: String){
+        Database.connect(url, driver, user, password)
         println("✅ Kết nối cơ sở dữ liệu thành công.")
     }
-    fun createSchema() {
-        connect()
+    fun createSchema(url: String, driver: String, user: String, password: String) {
+        connect(url, driver, user, password)
 
         transaction {
             SchemaUtils.create(

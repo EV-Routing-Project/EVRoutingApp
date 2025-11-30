@@ -5,9 +5,15 @@ enum class EventType {
     CHARGING_STARTED,
     CHARGING_FINISHED,
     QUEUE_JOINED,
-    CONNECTION_MAINTENANCE,
-    CONNECTION_RESTORED,
+    MAINTENANCE_EVENT,
+    MAINTENANCE_RESTORED,
     SIMULATION_END,
+}
+
+enum class MaintenanceScope {
+    PORT,
+    CONNECTION,
+    FULL_CHARGE_POINT
 }
 
 sealed class EventData
@@ -32,12 +38,13 @@ data class ChargingFinishedData(
     val sessionId: String,
 ) : EventData()
 
-data class ConnectionMaintenanceData(
-    val connectionId: Int
-) : EventData()
-
-data class ConnectionRestoredData(
-    val connectionId: Int
+data class MaintenanceEventData(
+    // Chỉ cần chargePointId hoặc connectionId, không cùng lúc
+    val chargePointId: Int? = null,
+    val connectionId: Int? = null,
+    val scope: MaintenanceScope,
+    val durationMillis: Long,
+    val portsAffected: Int = 0
 ) : EventData()
 
 data class Event(

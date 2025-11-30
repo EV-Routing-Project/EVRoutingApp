@@ -128,9 +128,9 @@ object POIRepository {
         }
     }
 
-    suspend fun getAllConnetionIDs(): List<Int> {
+    suspend fun getAllChargePointIDs(): List<Int> {
         return newSuspendedTransaction {
-            Connections.selectAll().map { it[Connections.id] }
+            ChargePoints.selectAll().map { it[ChargePoints.id] }
         }
     }
 
@@ -144,10 +144,28 @@ object POIRepository {
     }
 
     // --- Truy vấn Connection ---
+    suspend fun getTotalPortCount(): Int {
+        return newSuspendedTransaction {
+            Connections.selectAll().sumOf { it[Connections.quantity] ?: 0 }
+        }
+    }
+
     suspend fun getConnectionsForChargePoint(chargePointId: Int): List<Connection> {
         return newSuspendedTransaction {
             Connections.selectAll().where { Connections.chargePointId eq chargePointId }
                 .map(::toConnection)
+        }
+    }
+
+    suspend fun getAllConnections(): List<Connection>{
+        return newSuspendedTransaction {
+            Connections.selectAll().map(::toConnection)
+        }
+    }
+
+    suspend fun getAllConnetionIDs(): List<Int> {
+        return newSuspendedTransaction {
+            Connections.selectAll().map { it[Connections.id] }
         }
     }
 
@@ -165,6 +183,17 @@ object POIRepository {
     suspend fun getAddressInfoById(id: Int): AddressInfo? {
         return newSuspendedTransaction {
             AddressInfos.selectAll().where { AddressInfos.id eq id }
+                .limit(1)
+                .map(::toAddressInfo)
+                .singleOrNull()
+        }
+    }
+
+    suspend fun getAddressInfoForChargePoint(chargePointId: Int): AddressInfo? {
+        return newSuspendedTransaction {
+            (ChargePoints innerJoin AddressInfos)
+                .selectAll()
+                .where { ChargePoints.id eq chargePointId }
                 .limit(1)
                 .map(::toAddressInfo)
                 .singleOrNull()

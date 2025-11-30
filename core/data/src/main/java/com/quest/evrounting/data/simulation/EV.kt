@@ -25,7 +25,7 @@ data class EV(
 
 
     fun calculateChargingDuration(chargePowerKw: Double, batteryCapacityKwh: Double, currentBatteryLevel: Double, targetBatteryLevel: Double): Long {
-        val requiredEnergyKwh = batteryCapacityKwh * (targetBatteryLevel - currentBatteryLevel) / 100   // chia 100 để đúng đơn vị %
+        val requiredEnergyKwh = batteryCapacityKwh * (targetBatteryLevel - currentBatteryLevel) / 100   // chia 100 để đúng đơn vị % pin
         if (requiredEnergyKwh <= 0) return 0L
 
         // Giả sử hiệu suất sạc là 90%
@@ -36,17 +36,30 @@ data class EV(
     }
 
     companion object {
+        private fun getRandomTargetBatteryLevel(): Int {
+            val randomValue = Random.nextInt(1, 101)
+            return when {
+                randomValue <= 60 -> 90  // 60% người dùng muốn sạc tới 90%
+                randomValue <= 95 -> 80  // 35% người dùng muốn sạc tới 80%
+                else -> 100               // 5% người dùng muốn sạc đầy 100%
+            }
+        }
+
         fun createRandomCar(): EV {
             val randomID = UUID.randomUUID().toString().substring(0, 13)
             // Dung lượng pin ngẫu nhiên từ 40kWh (xe nhỏ) đến 100kWh (xe lớn)
             val randomCapacity = Random.nextDouble(40.0, 100.0)
             val randomCurrentLevel = Random.nextDouble(15.0, 40.0)
+            val randomTargetLevel = getRandomTargetBatteryLevel()
 
             return EV(
                 id = "CAR-$randomID",
+                batteryCapacityKwh = randomCapacity,
                 currentBatteryLevel = randomCurrentLevel,
-                batteryCapacityKwh = randomCapacity
+                targetBatteryLevel = randomTargetLevel.toDouble()
             )
         }
+
+
     }
 }

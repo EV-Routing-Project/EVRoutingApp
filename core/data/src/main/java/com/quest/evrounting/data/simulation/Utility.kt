@@ -10,6 +10,15 @@ object Utility {
     private const val EVENING_PEAK_START = 17 // 17h chiều
     private const val EVENING_PEAK_END = 20   // 20h tối
 
+    // ------ Dùng chung ------
+
+    fun getRandomDuration(minDurationMillis: Long, maxDurationMillis: Long): Long {
+        require(minDurationMillis < maxDurationMillis) { "Thời gian tối thiểu phải nhỏ hơn tối đa." }
+        return Random.nextLong(minDurationMillis, maxDurationMillis)
+    }
+
+
+    // ------ Dùng cho xe ------
 
     // Định nghĩa thời gian chờ dựa trên khung giờ
     enum class TimeInterval(val minMillis: Long, val maxMillis: Long) {
@@ -30,20 +39,27 @@ object Utility {
     }
 
     // Hàm quyết định số xe theo các khung giờ
-    fun determineGroupSize(interval: TimeInterval): Int {
-        val randomValue = Random.nextInt(1, 101) // Sinh số từ 1 đến 100
-        return when (interval) {
-            TimeInterval.PEAK -> when {
-                // when hoạt động như if-else nếu không có tham số truyền vào
-                randomValue <= 50 -> 1 // randomValue từ 1 đến 50: 50%
-                randomValue <= 85 -> 2 // randomValue từ 51 đến 85: 35%
-                else -> 3              // randomValue từ 86 đến 100: 15%
-            }
-            TimeInterval.NORMAL -> when {
-                randomValue <= 80 -> 1 // 80%
-                else -> 2              // 20%
-            }
-            TimeInterval.OFF_PEAK -> 1 // Giờ thấp điểm luôn luôn chỉ có 1 xe
+    fun determineGroupSize(interval: TimeInterval, totalConnections: Int): Int {
+        val basePercentage = when (interval) {
+            TimeInterval.PEAK -> 0.4        // 40%
+            TimeInterval.NORMAL -> 0.22     // 22%
+            TimeInterval.OFF_PEAK -> 0.08   // 8%
         }
+        val averageCarCount = (totalConnections * basePercentage).toInt()
+        // Sinh khoảng để đa dạng dữ liệu
+        val minCount = (averageCarCount * 0.8).toInt().coerceAtLeast(1)
+        val maxCount = (averageCarCount * 1.2).toInt().coerceAtLeast(minCount)
+        return Random.nextInt(minCount, maxCount + 1)
     }
+
+
+    // ------ Dùng cho Connection Sim ------
+
+    // Quyết định các sự kiện có xảy ra hay không
+    fun shouldEventOccur(percentage: Int): Boolean {
+        if (percentage <= 0) return false
+        if (percentage >= 100) return true
+        return Random.nextInt(1, 101) <= percentage
+    }
+
 }
