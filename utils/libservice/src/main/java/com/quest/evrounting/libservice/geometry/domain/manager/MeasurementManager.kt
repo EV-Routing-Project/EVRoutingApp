@@ -1,7 +1,7 @@
 package com.quest.evrounting.libservice.geometry.domain.manager
 
 import com.quest.evrounting.libservice.geometry.domain.model.LineString
-import com.quest.evrounting.libservice.geometry.domain.unit.GeometryUnit
+import com.quest.evrounting.libservice.geometry.utils.GeometryUnit
 import com.quest.evrounting.libservice.geometry.domain.port.MeasurementPort
 import com.quest.evrounting.libservice.geometry.domain.model.Point
 import com.quest.evrounting.libservice.geometry.service.GeometryService.distance
@@ -20,14 +20,11 @@ class MeasurementManager(val measurementAdapter: MeasurementPort) {
         points: List<Point>,
         radius: Double,
         units: GeometryUnit = GeometryUnit.UNIT_METERS,
-        cenLat: Double,
-        cenLon: Double,
-        cenAlt: Double = 0.0
+        center: Point
     ) : MutableList<Point>{
         val pointsInside: MutableList<Point> = mutableListOf()
-        val cenPoint: Point = Point(cenLon, cenLat, cenAlt)
         for(point in points){
-            if(distance(point, cenPoint, units) < radius){
+            if(distance(point, center, units) < radius){
                 pointsInside.add(point)
             }
         }

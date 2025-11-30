@@ -1,16 +1,16 @@
 package com.quest.evrounting.libservice.geometry.service
 
 import com.quest.evrounting.libservice.geometry.domain.manager.GeometryManager
-import com.quest.evrounting.libservice.geometry.domain.unit.GeometryUnit
+import com.quest.evrounting.libservice.geometry.utils.GeometryUnit
 import com.quest.evrounting.libservice.geometry.domain.model.Point
-import com.quest.evrounting.libservice.geometry.infrastructure.di.ServiceLocator
+import com.quest.evrounting.libservice.geometry.infrastructure.config.Dependencies
 import com.quest.evrounting.libservice.geometry.domain.manager.MeasurementManager
 import com.quest.evrounting.libservice.geometry.domain.model.LineString
 import com.quest.evrounting.libservice.geometry.domain.model.Polygon
 
 object GeometryService {
-    private val measurementManager: MeasurementManager = ServiceLocator.measurementManager
-    private val geometryManager: GeometryManager = ServiceLocator.geometryManager
+    private val measurementManager: MeasurementManager = Dependencies.measurementManager
+    private val geometryManager: GeometryManager = Dependencies.geometryManager
 
     fun createPoint(lon: Double, lat: Double, alt: Double = 0.0): Point? {
         return geometryManager.createPoint(lon, lat, alt)
@@ -32,11 +32,9 @@ object GeometryService {
         points: List<Point>,
         radius: Double,
         units: GeometryUnit = GeometryUnit.UNIT_METERS,
-        cenLat: Double,
-        cenLon: Double,
-        cenAlt: Double = 0.0
+        center: Point
     ) : MutableList<Point>{
-        return measurementManager.findPointsInsideCircle(points, radius, units, cenLat, cenLon, cenAlt)
+        return measurementManager.findPointsInsideCircle(points, radius, units, center)
     }
 
     fun getLengthOfPath(path: LineString, units: GeometryUnit = GeometryUnit.UNIT_METERS): Double {

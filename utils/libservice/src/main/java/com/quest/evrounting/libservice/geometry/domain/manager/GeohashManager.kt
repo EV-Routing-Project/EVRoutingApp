@@ -3,7 +3,6 @@ package com.quest.evrounting.libservice.geometry.domain.manager
 import com.quest.evrounting.libservice.geometry.domain.model.Geohash
 import com.quest.evrounting.libservice.geometry.domain.model.Point
 import com.quest.evrounting.libservice.geometry.domain.port.GeohashPort
-import com.quest.evrounting.libservice.geometry.service.GeohashService
 import com.quest.evrounting.libservice.geometry.utils.GeometryConstants
 import kotlin.collections.plus
 
@@ -12,13 +11,12 @@ class GeohashManager(val geohashAdapter: GeohashPort){
         return geohashAdapter.getAdjacent(geohash)
     }
 
-    fun getGeohashGridForPoint(lon: Double, lat: Double, significantBits: Int): List<Geohash> {
-        val geohash = GeohashService.encode(lon, lat, significantBits)
+    fun getGeohashGridForPoint(point: Point, significantBits: Int): List<Geohash> {
+        val geohash = encode(point, significantBits)
         return getAdjacent(geohash) + geohash
     }
 
-    fun encode(lon: Double, lat: Double, significantBits: Int): Geohash {
-        val point = Point(lon, lat)
+    fun encode(point: Point, significantBits: Int): Geohash {
         return geohashAdapter.encode(point, significantBits)
     }
 //
@@ -39,8 +37,8 @@ class GeohashManager(val geohashAdapter: GeohashPort){
         return 180.0 / Math.pow(2.0, (bits/ 2).toDouble())
     }
 
-    fun convertLonDegreeToMeters(lonDegree: Double, latitude: Double): Double {
-        val metersPerDegree = GeometryConstants.METER_PER_DEGREE_LONGITUDE_AT_EQUATOR * Math.cos(Math.toRadians(latitude))
+    fun convertLonDegreeToMeters(lonDegree: Double, point: Point): Double {
+        val metersPerDegree = GeometryConstants.METER_PER_DEGREE_LONGITUDE_AT_EQUATOR * Math.cos(Math.toRadians(point.lat))
         return lonDegree * metersPerDegree
     }
 
@@ -48,8 +46,8 @@ class GeohashManager(val geohashAdapter: GeohashPort){
         return latDegree * GeometryConstants.METER_PER_DEGREE_LATITUDE
     }
 
-    fun getLonSize(bits: Int, latitude: Double): Double{
-        return convertLonDegreeToMeters(getLonDegree(bits), latitude)
+    fun getLonSize(bits: Int, point: Point): Double{
+        return convertLonDegreeToMeters(getLonDegree(bits), point)
     }
 
     fun getLatSize(bits: Int): Double {

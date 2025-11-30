@@ -1,3 +1,5 @@
+import org.gradle.kotlin.dsl.accessors.runtime.maybeRegister
+
 plugins {
     alias(libs.plugins.jetbrains.kotlin.jvm)}
 
