@@ -121,6 +121,26 @@ object SimulationEngine {
             val finishTime = eventTimestamp + chargingDuration
             println("    -> ⏳ Ước tính thời gian sạc cho xe '${mockCar.id}': ${chargingDuration / 1000} giây mô phỏng.")
 
+            if (data.timeInterval == Utility.TimeInterval.PRE_SLEEP_PEAK || data.timeInterval == Utility.TimeInterval.DEEP_SLEEP) {
+                // Tính thời điểm 0h sáng của ngày hôm sau bằng cách
+                // Lấy mốc 0h của ngày hôm đó, rồi cộng thêm 1 ngày
+                val startOfToday = eventTimestamp - (eventTimestamp % (1000 * 60 * 60 * 24))
+                val startOfNextDay = startOfToday + (1000 * 60 * 60 * 24)
+
+                // Thời điểm người dùng có thể lấy xe là ngẫu nhiên từ 5h đến 7h sáng hôm sau
+                val pickupTime = startOfNextDay + Utility.getRandomDuration(
+                    TimeUnit.HOURS.toMillis(5),
+                    TimeUnit.HOURS.toMillis(7)
+                )
+
+                // Thời gian kết thúc thực tế sẽ là thời điểm nào đến sau: sạc đầy hoặc người dùng đến lấy xe
+                finishTime = maxOf(finishTime, pickupTime)
+
+                println("    -> 🌙 Xe đến vào ban đêm. Thời gian kết thúc được điều chỉnh theo giờ lấy xe buổi sáng (khoảng 5-7h).")
+
+
+            }
+
             val newSession = ChargingSession(
                 sessionId = UUID.randomUUID().toString(), // Tạo ID duy nhất cho phiên
                 carId = data.car.id,
