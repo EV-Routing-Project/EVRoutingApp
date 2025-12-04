@@ -18,7 +18,8 @@ object PortStatusRepository {
     )
 
     /**
-     * Ghi một sự kiện thay đổi số lượng cổng trống vào log.
+     * Ghi một sự kiện thay đổi số lượng cổng trống vào log (không sử dụng cho
+     * trạng thái khởi tạo ban đầu)
      */
     suspend fun insertNewState(logEntry: PortStatusLog) {
         newSuspendedTransaction<Unit> {
@@ -27,6 +28,47 @@ object PortStatusRepository {
                 it[connectionId] = logEntry.connectionId
                 it[availablePorts] = logEntry.availablePorts
                 it[simulationTimestamp] = logEntry.simulationTimestamp
+            }
+        }
+    }
+
+
+    suspend fun insertNewStateForAll(logEntries: List<PortStatusLog>) {
+        if (logEntries.isEmpty()) {
+            return
+        }
+        newSuspendedTransaction {
+            PortStatusLogs.batchInsert(logEntries, shouldReturnGeneratedValues = false) { logEntry ->
+                this[PortStatusLogs.connectionId] = logEntry.connectionId
+                this[PortStatusLogs.availablePorts] = logEntry.availablePorts
+                this[PortStatusLogs.simulationTimestamp] = logEntry.simulationTimestamp
+            }
+        }
+    }
+
+
+    // Hàm tìm kiếm trạng thái cho tất cả Connections
+    suspend fun getLatestStatusForAllConnections(atTimestamp: Long): List<PortStatusLog> {
+        return newSuspendedTransaction {
+//            val fiveMinutesInMillis = 5 * 60 * 1000L
+//            val roundedTimestamp = (atTimestamp / fiveMinutesInMillis) * fiveMinutesInMillis
+
+            // Nếu không có thì tìm mốc nhỏ hơn
+            val closestTimestamp = PortStatusLogs
+                .select(PortStatusLogs.simulationTimestamp)
+                .where { PortStatusLogs.simulationTimestamp lessEq atTimestamp }
+                .orderBy(PortStatusLogs.simulationTimestamp, SortOrder.DESC)
+                .limit(1)
+                .singleOrNull()
+                ?.get(PortStatusLogs.simulationTimestamp)
+
+            if (closestTimestamp != null) {
+                PortStatusLogs
+                    .selectAll()
+                    .where { PortStatusLogs.simulationTimestamp eq closestTimestamp }
+                    .map(::toPortStatusLog)
+            } else {
+                emptyList()
             }
         }
     }
@@ -69,30 +111,33 @@ object PortStatusRepository {
 
 
     /**
-     * Lấy trạng thái MỚI NHẤT của TẤT CẢ các loại cổng thuộc về một trạm sạc.
+     * Lấy trạng thái của TẤT CẢ các loại cổng thuộc một trạm sạc TẠI MỘT THỜI ĐIỂM CỤ THỂ.
      * @param connectionIds Danh sách các ID từ bảng Connections thuộc về một ChargePoint.
-     * @return Một Flow chứa danh sách các bản ghi log cuối cùng cho mỗi connectionId.
+     * @param atTimestamp Thời điểm trong quá khứ mà bạn muốn truy vấn trạng thái.
+     * @return Một danh sách các bản ghi log gần nhất (nhưng không muộn hơn atTimestamp) cho mỗi connectionId.
      */
-    fun getLiveStatusesForChargePoint(connectionIds: List<Int>): Flow<List<PortStatusLog>> = flow {
-        val latestLogs = newSuspendedTransaction {
+    suspend fun getStatusesAtTimestampForConnections(connectionIds: List<Int>, atTimestamp: Long): List<PortStatusLog> {
+        return newSuspendedTransaction {
             if (connectionIds.isEmpty()) {
                 emptyList()
             } else {
+                // Bước 1: Tạo truy vấn con để tìm timestamp lớn nhất NHƯNG KHÔNG VƯỢT QUÁ atTimestamp cho mỗi connectionId.
                 val maxTimestampSubQuery = PortStatusLogs
-                    // 1. Chỉ định các cột cần lấy ngay trong hàm select
                     .select(
                         PortStatusLogs.connectionId,
-                        PortStatusLogs.simulationTimestamp.max().alias("max_timestamp") // Đặt bí danh cho cột max
+                        PortStatusLogs.simulationTimestamp.max().alias("max_timestamp")
                     )
-                    // 2. Lọc ngay sau đó
-                    .where { PortStatusLogs.connectionId inList connectionIds }
+                    .where {
+                        (PortStatusLogs.connectionId inList connectionIds) and
+                                (PortStatusLogs.simulationTimestamp lessEq atTimestamp) // Điều kiện quan trọng được thêm vào
+                    }
                     .groupBy(PortStatusLogs.connectionId)
-                    .alias("max_ts") // Đặt bí danh cho toàn bộ subquery
+                    .alias("max_ts")
 
-                // Lấy bí danh của cột max_timestamp từ subquery
                 val maxTimestampAlias = maxTimestampSubQuery[PortStatusLogs.simulationTimestamp.max().alias("max_timestamp")]
 
-                // So sánh timestamp của bảng gốc với cột max_timestamp từ subquery
+                // Bước 2: Join bảng gốc với kết quả của truy vấn con.
+                // Logic join và lọc cuối cùng không thay đổi.
                 PortStatusLogs
                     .innerJoin(
                         maxTimestampSubQuery,
@@ -101,13 +146,11 @@ object PortStatusRepository {
                     )
                     .selectAll()
                     .where {
-                        // So sánh timestamp của bảng gốc với cột max_timestamp từ subquery
                         (PortStatusLogs.simulationTimestamp eq maxTimestampAlias)
                     }
                     .map(::toPortStatusLog)
             }
         }
-        emit(latestLogs)
     }
 
 

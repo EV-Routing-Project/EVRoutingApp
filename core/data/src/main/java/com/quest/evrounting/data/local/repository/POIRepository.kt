@@ -89,11 +89,7 @@ object POIRepository {
             }
 
 
-
             PortStatusRepository.clearAllLogs()
-
-
-
             // Khởi tạo trạng thái ban đầu trong PortStatusLog
             // (Trạng thái cho từng Connections ban đầu)
             val initialLogs = connections.map { conn ->

@@ -35,8 +35,8 @@ object ToEntity {
             id = this.id, // Ánh xạ trực tiếp ID
             uuid = this.uuid,
             addressInfoId = this.addressInfo.id,
-            operatorId = this.operatorInfo.id,
-            usageTypeId = this.usageType.id,
+            operatorId = this.operatorInfo?.id,
+            usageTypeId = this.usageType?.id,
             // Lưu ý: Các trường không có trong API nhưng có trong Entity
             // sẽ cần được gán giá trị mặc định hoặc null tại đây.
         )

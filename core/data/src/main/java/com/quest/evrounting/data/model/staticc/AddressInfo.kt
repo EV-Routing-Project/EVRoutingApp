@@ -9,7 +9,7 @@ object AddressInfos : Table("AddressInfo") {
     val title = varchar("Title", 255)
     val addressLine1 = varchar("AddressLine1", 500).nullable()
     val town = varchar("Town", 100).nullable()
-    val postcode = varchar("Postcode", 20).nullable()
+    val postcode = varchar("Postcode", 100).nullable()
 
     val countryId = reference(
         "CountryID",

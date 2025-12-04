@@ -7,7 +7,7 @@ import com.quest.evrounting.data.simulation.mapper.toConnectionSim
 import kotlinx.coroutines.runBlocking
 import java.util.concurrent.TimeUnit
 
-suspend fun runSimulation (url: String, driver: String, user: String, password: String) {
+suspend fun runSimulation (url: String, driver: String, user: String, password: String, simulationDurationDay: Long) {
     println("--- CHƯƠNG TRÌNH MÔ PHỎNG SẠC XE ĐIỆN ---")
     println("\nĐang kết nối tới cơ sở dữ liệu...")
     DatabaseFactory.connect(url, driver, user, password)
@@ -23,17 +23,22 @@ suspend fun runSimulation (url: String, driver: String, user: String, password: 
     val totalPort = POIRepository.getTotalPortCount()
     val allChargePointIds = POIRepository.getAllChargePointIDs()
     val allConnections = POIRepository.getAllConnections()
-    val allConnectionSim = allConnections.mapNotNull { it.toConnectionSim() }
+
+    // Lọc ra các connection có công suất LỚN HƠN 3kW
+    val MINIMUM_POWER_KW = 3.0
+    val usableConnections = allConnections.filter { (it.powerKw ?: 0.0) >= MINIMUM_POWER_KW }
+    val allConnectionSim = usableConnections.mapNotNull { it.toConnectionSim() }
     if (allConnectionSim.isEmpty()) {
-        println("❌ LỖI: Không tìm thấy bất kỳ Connection nào trong cơ sở dữ liệu. Dừng mô phỏng.")
+        println("❌ LỖI: Không tìm thấy bất kỳ Connection nào có công suất >= ${MINIMUM_POWER_KW}kW. Dừng mô phỏng.")
         return
     }
-    println("✅ Tìm thấy ${allConnectionSim.size} Connection có thể mô phỏng.")
+    println("✅ Tìm thấy tổng cộng ${allConnections.size} connection.")
+    println("✅ Sau khi lọc, có ${allConnectionSim.size} Connection phù hợp (công suất >= ${MINIMUM_POWER_KW}kW) để mô phỏng.")
 
 
-    // Giới hạn thời gian mô phỏng (ví dụ: 1 ngày)
+    // Giới hạn lên lich thời gian mô phỏng (ví dụ: 1 ngày)
     println("\nĐang lên lịch cho các sự kiện (xe đến và bảo trì trạm) trong khoảng thời gian mô phỏng...")
-    val simulationDurationMillis = TimeUnit.DAYS.toMillis(1)
+    val simulationDurationMillis = TimeUnit.DAYS.toMillis(simulationDurationDay)
     var carArrivalCount = 0
     var maintenanceCount = 0
     var nextArrivalTime = 0L
@@ -56,7 +61,7 @@ suspend fun runSimulation (url: String, driver: String, user: String, password: 
 
         if (nextArrivalTime <= simulationDurationMillis) {
             val numberOfCarsInGroup = Utility.determineGroupSize(timeInterval, allConnectionSim.size)
-            println("    -> 🌊 Tại T≈$nextArrivalTime (Khung giờ: $timeInterval) có $numberOfCarsInGroup xe đến sạc tại các trạm.")
+//            println("    -> 🌊 Tại T≈$nextArrivalTime (Khung giờ: $timeInterval) có $numberOfCarsInGroup xe đến sạc tại các trạm.")
 
             repeat(numberOfCarsInGroup){
                 val littleDelay = Utility.getRandomDuration(0,2000)      // Đã đảm bảo luôn nhỏ hơn timeToNextArrival
@@ -70,7 +75,7 @@ suspend fun runSimulation (url: String, driver: String, user: String, password: 
                         Event(
                             timestamp = finalTime,
                             type = EventType.CAR_ARRIVAL,
-                            data = CarArrivalData(car = randomEV, connectionId = targetConnectionId)
+                            data = CarArrivalData(car = randomEV, connectionId = targetConnectionId,timeInterval = timeInterval)
                         )
                     )
                     carArrivalCount++
@@ -126,9 +131,9 @@ suspend fun runSimulation (url: String, driver: String, user: String, password: 
                     val finalTime = nextMaintenanceTime + littleDelay
                     if (finalTime <= simulationDurationMillis) {
                         val maintenanceDurationMillis = when (selectedScope) {
-                            MaintenanceScope.PORT -> Utility.getRandomDuration(TimeUnit.MINUTES.toMillis(30), TimeUnit.HOURS.toMillis(2))            // Nhanh: 30p - 2h
-                            MaintenanceScope.CONNECTION -> Utility.getRandomDuration(TimeUnit.MINUTES.toMillis(90), TimeUnit.HOURS.toMillis(5))      // Vừa: 1h30p - 5h
-                            MaintenanceScope.FULL_CHARGE_POINT -> Utility.getRandomDuration(TimeUnit.HOURS.toMillis(4), TimeUnit.HOURS.toMillis(12)) // Lâu: 4h - 12h
+                            MaintenanceScope.PORT -> Utility.getRandomDuration(TimeUnit.MINUTES.toMillis(30), TimeUnit.HOURS.toMillis(2))           // Nhanh: 30p - 2h
+                            MaintenanceScope.CONNECTION -> Utility.getRandomDuration(TimeUnit.HOURS.toMillis(12), TimeUnit.HOURS.toMillis(24))      // Vừa: 12h - 24h
+                            MaintenanceScope.FULL_CHARGE_POINT -> Utility.getRandomDuration(TimeUnit.DAYS.toMillis(1), TimeUnit.DAYS.toMillis(3))   // Lâu: 1-3 ngày
                         }
 
                         val eventData: MaintenanceEventData? = when (selectedScope) {
@@ -175,11 +180,12 @@ suspend fun runSimulation (url: String, driver: String, user: String, password: 
     println("\n--- KẾT THÚC MÔ PHỎNG ---")
 }
 
-fun main() = runBlocking {
-    runSimulation(
-        url = DatabaseFactory.URL,
-        driver = DatabaseFactory.DRIVER,
-        user = DatabaseFactory.USER,
-        password = DatabaseFactory.PASSWORD
-    )
-}
+//fun main() = runBlocking {
+//    runSimulation(
+//        url = DatabaseFactory.URL,
+//        driver = DatabaseFactory.DRIVER,
+//        user = DatabaseFactory.USER,
+//        password = DatabaseFactory.PASSWORD,
+//        simulationDurationDay = 30
+//    )
+//}

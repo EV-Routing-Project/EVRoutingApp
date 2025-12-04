@@ -20,7 +20,8 @@ sealed class EventData
 
 data class CarArrivalData(
     val car: EV,
-    val connectionId: Int
+    val connectionId: Int,
+    val timeInterval: Utility.TimeInterval
 ) : EventData()
 
 //data class ChargingStartedData(
