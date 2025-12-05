@@ -25,12 +25,25 @@ data class EV(
 
 
     fun calculateChargingDuration(chargePowerKw: Double, batteryCapacityKwh: Double, currentBatteryLevel: Double, targetBatteryLevel: Double): Long {
+        // Con số 1.0 này có thể điều chỉnh
+        if (chargePowerKw < 1.0) {
+            println("⚠️ CẢNH BÁO: Công suất sạc quá thấp (${chargePowerKw}kW). Thời gian sạc được tính là 0.")
+            return 0L
+        }
         val requiredEnergyKwh = batteryCapacityKwh * (targetBatteryLevel - currentBatteryLevel) / 100   // chia 100 để đúng đơn vị % pin
         if (requiredEnergyKwh <= 0) return 0L
 
         // Giả sử hiệu suất sạc là 90%
         val chargingEfficiency = 0.9
         val hoursNeeded = requiredEnergyKwh / (chargePowerKw * chargingEfficiency)
+
+        // Giới hạn thời gian sạc tối đa (tùy chọn)
+//        val maxChargingHours = 48.0
+//        if (hoursNeeded > maxChargingHours) {
+//            println("⚠️ CẢNH BÁO: Thời gian sạc tính toán (${hoursNeeded} giờ) vượt ngưỡng cho phép. Kiểm tra lại công suất và dung lượng pin.")
+//            // Bạn có thể trả về thời gian tối đa hoặc 0 tùy vào logic mong muốn
+//            return (maxChargingHours * 3600 * 1000).toLong()
+//        }
 
         return (hoursNeeded * 3600 * 1000).toLong()
     }

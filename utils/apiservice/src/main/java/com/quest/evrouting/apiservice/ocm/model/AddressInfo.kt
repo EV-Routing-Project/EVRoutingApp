@@ -1,9 +1,9 @@
 package com.quest.evrouting.apiservice.ocm.model
 
-import com.quest.evrouting.libservice.geometry.domain.model.Point
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import com.quest.evrouting.libservice.geometry.service.GeohashService
+import com.quest.evrouting.libservice.geometry.domain.model.Point
 
 @Serializable
 data class AddressInfo(

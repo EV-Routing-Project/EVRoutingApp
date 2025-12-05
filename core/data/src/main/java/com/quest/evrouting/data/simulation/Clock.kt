@@ -5,6 +5,7 @@ import kotlinx.coroutines.runBlocking
 import java.util.concurrent.atomic.AtomicLong
 import kotlin.system.measureTimeMillis
 
+// object này dùng để test thời gian thực hiện tác vụ
 object Clock {
     private val startTimeMillis = AtomicLong(0L)
 
@@ -60,6 +61,6 @@ fun main() = runBlocking {
 
     println("Timestamp mô phỏng sau đó: $timestamp2 ms")
     println("-> Đã trôi qua ~2000 ms thời gian thực.")
-    println("-> Tương đương ${simulatedElapsedTime} ms (${simulatedElapsedTime / 1000} giây) trong mô phỏng.")
+    println("-> Tương đương $simulatedElapsedTime ms (${simulatedElapsedTime / 1000} giây) trong mô phỏng.")
 
 }

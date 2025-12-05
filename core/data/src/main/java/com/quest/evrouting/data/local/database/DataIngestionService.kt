@@ -9,14 +9,12 @@ import kotlinx.coroutines.runBlocking
 
 // File này để lưu dữ liệu tĩnh từ API vào db
 object DataIngestionService {
-    private const val API_KEY = "KEY"
-
-    suspend fun syncData(key: String = API_KEY, url: String, driver: String, user: String, password: String) {
+    suspend fun syncData(apikey: String, url: String, driver: String, user: String, password: String) {
         println("🚀 Bắt đầu quá trình tạo schema...")
         DatabaseFactory.createSchema(url, driver, user, password)
 
         println("🚀 Bắt đầu quá trình đồng bộ dữ liệu từ OCM...")
-        val result = OcmApiCaller.fetchChargePoints(key)
+        val result = OcmApiCaller.fetchChargePoints(apikey)
 
         result.onSuccess { poisList ->
             println("✅ Nhận được ${poisList.size} trạm sạc. Bắt đầu quá trình mapping...")
@@ -49,8 +47,8 @@ object DataIngestionService {
 
             // Lưu dữ liệu bảng tham chiếu vào database
             ReferenceRepository.upsertCountries(poisList.map { it.addressInfo.country.toEntity() }.distinct())
-            ReferenceRepository.upsertOperators(poisList.map { it.operatorInfo.toEntity() }.distinct())
-            ReferenceRepository.upsertUsageTypes(poisList.map { it.usageType.toEntity() }.distinct())
+            ReferenceRepository.upsertOperators(poisList.mapNotNull { it.operatorInfo?.toEntity() }.distinct())
+            ReferenceRepository.upsertUsageTypes(poisList.mapNotNull { it.usageType?.toEntity() }.distinct())
             ReferenceRepository.upsertConnectionTypes(connectionTypeEntities)
             ReferenceRepository.upsertCurrentTypes(currentTypeEntities)
 
@@ -70,12 +68,14 @@ object DataIngestionService {
 }
 
 fun main() = runBlocking {
+    val apiKey = "KEY"
     println("==============================================")
     println(" BẮT ĐẦU CHẠY DATA INGESTION SERVICE ")
     println("==============================================")
 
     try {
         DataIngestionService.syncData(
+            apikey = apiKey,
             url = DatabaseFactory.URL,
             driver = DatabaseFactory.DRIVER,
             user = DatabaseFactory.USER,

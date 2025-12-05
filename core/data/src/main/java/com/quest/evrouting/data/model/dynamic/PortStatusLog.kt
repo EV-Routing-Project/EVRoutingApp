@@ -27,8 +27,7 @@ object PortStatusLogs : Table("PortStatusLog") {
     override val primaryKey = PrimaryKey(logId)
 
     init {
-        index(isUnique = false, connectionId)
-        index(isUnique = false, simulationTimestamp)
+        index(isUnique = false, connectionId, simulationTimestamp)
     }
 }
 

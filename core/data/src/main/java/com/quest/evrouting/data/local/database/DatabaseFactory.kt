@@ -22,10 +22,13 @@ object DatabaseFactory {
         Database.connect(url, driver, user, password)
         println("✅ Kết nối cơ sở dữ liệu thành công.")
     }
+
+    // Trước khi chạy createSchema phải tạo sẵn Schema ev_routing_db trong CSDL
     fun createSchema(url: String, driver: String, user: String, password: String) {
         connect(url, driver, user, password)
 
         transaction {
+            // SchemaUtils.create(...) chỉ tạo bảng nếu chưa tồn tại
             SchemaUtils.create(
                 // Bảng tham chiếu
                 Countries,

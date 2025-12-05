@@ -12,7 +12,7 @@ data class PoisResponse(
     @SerialName("ID") val id: Int,
     @SerialName("UUID") val uuid: String,
     @SerialName("AddressInfo") val addressInfo: AddressInfo,
-    @SerialName("OperatorInfo") val operatorInfo: Operator,
-    @SerialName("UsageType") val usageType: UsageType,
+    @SerialName("OperatorInfo") val operatorInfo: Operator? = null,
+    @SerialName("UsageType") val usageType: UsageType? = null,
     @SerialName("Connections") val connections: List<Connections>,
 )
