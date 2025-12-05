@@ -11,13 +11,13 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
+            <option value="$PROJECT_DIR$/configuration" />
             <option value="$PROJECT_DIR$/core" />
             <option value="$PROJECT_DIR$/core/algorithm" />
             <option value="$PROJECT_DIR$/core/data" />
             <option value="$PROJECT_DIR$/utils" />
             <option value="$PROJECT_DIR$/utils/apiservice" />
             <option value="$PROJECT_DIR$/utils/libservice" />
-            <option value="$PROJECT_DIR$/utils/secrets" />
           </set>
         </option>
       </GradleProjectSettings>

@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.quest.evrounting.phone"
+    namespace = "com.quest.evrouting.phone"
     compileSdk = 36
 
     defaultConfig {

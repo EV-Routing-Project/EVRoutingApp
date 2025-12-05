@@ -23,10 +23,10 @@ dependencyResolutionManagement {
 }
 
 
-rootProject.name = "EV Rounting App"
+rootProject.name = "EV Routing App"
 include(":app")
 include(":core:algorithm")
 include(":core:data")
 include(":utils:apiservice")
 include(":utils:libservice")
-include(":utils:secrets")
+include(":configuration")
