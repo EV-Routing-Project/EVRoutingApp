@@ -8,7 +8,7 @@ interface GeometryProviderPort {
     fun createLineString(points: List<Point>) : LineString?
     fun getHaversineDistance(start: Point, end: Point): Double
     fun findPointsInsideCircle(points: List<Point>, radius: Double, center: Point) : List<Point>
-    fun getLengthOfPath(path: LineString): Double
+    fun getLengthOfLineString(path: LineString): Double
     fun findPathAlongPath(path: LineString ,distanceAlong: Double): LineString?
     fun findPointAlongPath (path: LineString, distanceAlong: Double): Point?
 }

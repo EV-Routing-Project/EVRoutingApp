@@ -1,25 +1,31 @@
-package com.quest.evrouting.libservice.geometry.domain.manager
+package com.quest.evrouting.libservice.geometry.infrastructure.adapter
 
+import com.quest.evrouting.libservice.geometry.domain.port.MeasurementServicePort
+import com.mapbox.turf.TurfMeasurement
 import com.quest.evrouting.libservice.geometry.domain.model.LineString
 import com.quest.evrouting.libservice.geometry.utils.GeometryUnit
-import com.quest.evrouting.libservice.geometry.domain.port.MeasurementServicePort
+import com.quest.evrouting.libservice.geometry.infrastructure.mapper.toExternal
 import com.quest.evrouting.libservice.geometry.domain.model.Point
 import com.quest.evrouting.libservice.geometry.service.GeometryService.distance
 import com.quest.evrouting.libservice.geometry.service.GeometryService.getLengthOfPath
 
-class MeasurementManager(val measurementAdapter: MeasurementServicePort) {
-    fun getHaversineDistance(startPoint: Point, endPoint: Point, units: GeometryUnit = GeometryUnit.UNIT_METERS): Double {
-        return measurementAdapter.getHaversineDistance(startPoint,endPoint, units)
+class MeasurementServiceAdapter: MeasurementServicePort {
+    override fun getHaversineDistance(startPoint: Point, endPoint: Point, units: GeometryUnit): Double {
+        return TurfMeasurement.distance(
+            startPoint.toExternal(),
+            endPoint.toExternal(),
+            units.toExternal()
+        )
     }
 
-    fun getLengthOfLineString(path: LineString, units: GeometryUnit = GeometryUnit.UNIT_METERS): Double {
-        return measurementAdapter.getLengthOfLineString(path, units)
+    override fun getLengthOfLineString(path: LineString, units: GeometryUnit): Double {
+        return TurfMeasurement.length(path.toExternal(), units.toExternal())
     }
 
-    fun findPointsInsideCircle(
+    override fun findPointsInsideCircle(
         points: List<Point>,
         radius: Double,
-        units: GeometryUnit = GeometryUnit.UNIT_METERS,
+        units: GeometryUnit,
         center: Point
     ) : MutableList<Point>{
         val pointsInside: MutableList<Point> = mutableListOf()
@@ -31,10 +37,10 @@ class MeasurementManager(val measurementAdapter: MeasurementServicePort) {
         return pointsInside
     }
 
-    fun findPathAlongPath(
+    override fun findPathAlongPath(
         path: LineString,
         distanceAlong: Double,
-        units: GeometryUnit = GeometryUnit.UNIT_METERS
+        units: GeometryUnit
     ): LineString? {
         if(distanceAlong < 0){
             return null
@@ -67,10 +73,10 @@ class MeasurementManager(val measurementAdapter: MeasurementServicePort) {
         return null
     }
 
-    fun findPointAlongPath (
+    override fun findPointAlongPath (
         path: LineString,
         distanceAlong: Double,
-        units: GeometryUnit = GeometryUnit.UNIT_METERS
+        units: GeometryUnit
     ): Point? {
         if(distanceAlong < 0){
             return path.coordinates.firstOrNull()

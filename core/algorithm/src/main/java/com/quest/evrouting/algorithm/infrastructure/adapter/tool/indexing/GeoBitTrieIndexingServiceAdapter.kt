@@ -6,7 +6,7 @@ import com.quest.evrouting.algorithm.domain.port.tool.code.GeohashProviderPort
 import com.quest.evrouting.algorithm.domain.port.tool.geometry.GeometryProviderPort
 import com.quest.evrouting.algorithm.domain.port.tool.indexing.IndexingServicePort
 import com.quest.evrouting.algorithm.domain.port.model.StationPort
-import com.quest.evrouting.algorithm.config.utils.GeoUtils
+import com.quest.evrouting.algorithm.utils.GeoUtils
 import kotlin.math.max
 
 class GeoBitTrieIndexingServiceAdapter (

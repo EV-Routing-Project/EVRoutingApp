@@ -6,9 +6,11 @@ import com.quest.evrouting.algorithm.domain.port.tool.code.GeohashProviderPort
 import com.quest.evrouting.algorithm.infrastructure.mapper.toDomain
 import com.quest.evrouting.algorithm.infrastructure.mapper.toExternal
 import com.quest.evrouting.libservice.geometry.ServiceKit
+import com.quest.evrouting.libservice.geometry.domain.port.GeohashServicePort
 
-class GeohashProviderAdapter : GeohashProviderPort {
-    private val geohashService = ServiceKit.geohashService
+class GeohashProviderAdapter(
+    private val geohashService: GeohashServicePort
+) : GeohashProviderPort {
     override fun encode(
         point: Point,
         significantBits: Int

@@ -2,7 +2,7 @@ package com.quest.evrouting.algorithm.domain.port.tool.routing
 
 import com.quest.evrouting.algorithm.domain.model.Point
 import com.quest.evrouting.algorithm.domain.port.model.PathPort
-import com.quest.evrouting.algorithm.config.utils.RoutingProfile
+import com.quest.evrouting.algorithm.utils.RoutingProfile
 
 interface RoutingServicePort {
     suspend fun findShortestPath(start: Point, end: Point, profile: RoutingProfile = RoutingProfile.DRIVING): PathPort?

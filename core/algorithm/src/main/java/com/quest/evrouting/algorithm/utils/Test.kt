@@ -1,4 +1,4 @@
-package com.quest.evrouting.algorithm.config.utils
+package com.quest.evrouting.algorithm.utils
 
 import com.quest.evrouting.algorithm.domain.model.Point
 import com.quest.evrouting.algorithm.domain.port.tool.routing.RoutingProviderPort

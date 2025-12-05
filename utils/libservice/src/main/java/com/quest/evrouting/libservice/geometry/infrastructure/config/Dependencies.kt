@@ -2,25 +2,25 @@ package com.quest.evrouting.libservice.geometry.infrastructure.config
 
 import com.quest.evrouting.libservice.geometry.domain.manager.GeohashManager
 import com.quest.evrouting.libservice.geometry.domain.manager.GeometryManager
-import com.quest.evrouting.libservice.geometry.infrastructure.adapter.MeasurementAdapter
-import com.quest.evrouting.libservice.geometry.infrastructure.adapter.PolylineAdapter
+import com.quest.evrouting.libservice.geometry.infrastructure.adapter.MeasurementServiceAdapter
+import com.quest.evrouting.libservice.geometry.infrastructure.adapter.PolylineServiceAdapter
 import com.quest.evrouting.libservice.geometry.domain.manager.MeasurementManager
 import com.quest.evrouting.libservice.geometry.domain.manager.PolylineManager
-import com.quest.evrouting.libservice.geometry.domain.port.GeohashPort
-import com.quest.evrouting.libservice.geometry.domain.port.MeasurementPort
-import com.quest.evrouting.libservice.geometry.domain.port.PolylinePort
-import com.quest.evrouting.libservice.geometry.infrastructure.adapter.GeohashAdapter
+import com.quest.evrouting.libservice.geometry.domain.port.GeohashServicePort
+import com.quest.evrouting.libservice.geometry.domain.port.MeasurementServicePort
+import com.quest.evrouting.libservice.geometry.domain.port.PolylineServicePort
+import com.quest.evrouting.libservice.geometry.infrastructure.adapter.GeohashServiceAdapter
 
 object Dependencies {
-    fun createPolylineManager(polylineAdapter: PolylinePort): PolylineManager {
+    fun createPolylineManager(polylineAdapter: PolylineServicePort): PolylineManager {
         return PolylineManager(polylineAdapter)
     }
 
-    fun createMeasurementManager(measurementAdapter: MeasurementPort): MeasurementManager {
+    fun createMeasurementManager(measurementAdapter: MeasurementServicePort): MeasurementManager {
         return MeasurementManager(measurementAdapter)
     }
 
-    fun createGeohashManager(geohashAdapter: GeohashPort): GeohashManager {
+    fun createGeohashManager(geohashAdapter: GeohashServicePort): GeohashManager {
         return GeohashManager(geohashAdapter)
     }
 
@@ -29,15 +29,15 @@ object Dependencies {
     }
 
     val polylineManager: PolylineManager by lazy {
-        createPolylineManager(PolylineAdapter())
+        createPolylineManager(PolylineServiceAdapter())
     }
 
     val measurementManager: MeasurementManager by lazy {
-        createMeasurementManager(MeasurementAdapter())
+        createMeasurementManager(MeasurementServiceAdapter())
     }
 
     val geohashManager: GeohashManager by lazy {
-        createGeohashManager(GeohashAdapter())
+        createGeohashManager(GeohashServiceAdapter())
     }
 
     val geometryManager: GeometryManager by lazy {

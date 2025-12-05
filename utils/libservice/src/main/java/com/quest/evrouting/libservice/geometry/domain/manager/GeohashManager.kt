@@ -2,37 +2,25 @@ package com.quest.evrouting.libservice.geometry.domain.manager
 
 import com.quest.evrouting.libservice.geometry.domain.model.Geohash
 import com.quest.evrouting.libservice.geometry.domain.model.Point
-import com.quest.evrouting.libservice.geometry.domain.port.GeohashPort
+import com.quest.evrouting.libservice.geometry.domain.port.GeohashServicePort
 import com.quest.evrouting.libservice.geometry.utils.GeometryConstants
 import kotlin.collections.plus
 
-class GeohashManager(val geohashAdapter: GeohashPort){
-    fun getAdjacent(geohash: Geohash): List<Geohash> {
-        return geohashAdapter.getAdjacent(geohash)
-    }
+class GeohashManager(val geohashAdapter: GeohashServicePort){
 
     fun getGeohashGridForPoint(point: Point, significantBits: Int): List<Geohash> {
-        val geohash = encode(point, significantBits)
-        return getAdjacent(geohash) + geohash
+        return geohashAdapter.getGeohashGridForPoint(point,significantBits)
     }
 
     fun encode(point: Point, significantBits: Int): Geohash {
         return geohashAdapter.encode(point, significantBits)
     }
-//
-//    fun encodeToLong(lon: Double, lat: Double, significantBits: Int): Long {
-//        val geohash = encode(lon, lat, significantBits)
-//        return geohash.value
-//    }
-//
     fun createGeohashFromLongValue(value: Long, significantBits: Int): Geohash {
-        return Geohash(value, significantBits)
+        return geohashAdapter.createGeohashFromLongValue(value, significantBits)
     }
-
     fun getLonDegree(bits: Int): Double {
         return 360.0 / Math.pow(2.0, ((bits + 1) / 2).toDouble())
     }
-
     fun getLatDegree(bits: Int): Double {
         return 180.0 / Math.pow(2.0, (bits/ 2).toDouble())
     }
@@ -53,7 +41,6 @@ class GeohashManager(val geohashAdapter: GeohashPort){
     fun getLatSize(bits: Int): Double {
         return convertLatDegreeToMeters(getLatDegree(bits))
     }
-
     fun adjustGeohashPrecision(geohash: Geohash, significantOfSystem: Int) : Geohash {
         val bitOffset = geohash.significantBits - significantOfSystem
         if(bitOffset > 0){

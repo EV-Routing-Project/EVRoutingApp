@@ -6,7 +6,7 @@ import com.quest.evrouting.algorithm.domain.port.model.PathPort
 import com.quest.evrouting.algorithm.domain.port.tool.geometry.GeometryProviderPort
 import com.quest.evrouting.algorithm.domain.port.tool.routing.RoutingProviderPort
 import com.quest.evrouting.algorithm.domain.port.tool.routing.RoutingServicePort
-import com.quest.evrouting.algorithm.config.utils.RoutingProfile
+import com.quest.evrouting.algorithm.utils.RoutingProfile
 
 class RoutingServiceAdapter(
     val routingProvider: RoutingProviderPort,

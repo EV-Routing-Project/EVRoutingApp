@@ -5,10 +5,13 @@ import com.quest.evrouting.algorithm.domain.model.Point
 import com.quest.evrouting.algorithm.domain.port.tool.geometry.GeometryProviderPort
 import com.quest.evrouting.algorithm.infrastructure.mapper.toDomain
 import com.quest.evrouting.algorithm.infrastructure.mapper.toExternal
-import com.quest.evrouting.libservice.geometry.ServiceKit
+import com.quest.evrouting.libservice.geometry.domain.port.GeometryServicePort
+import com.quest.evrouting.libservice.geometry.domain.port.MeasurementServicePort
 
-class GeometryProviderAdapter : GeometryProviderPort {
-    private val geometryService = ServiceKit.geometryService
+class GeometryProviderAdapter(
+    private val measurementService: MeasurementServicePort,
+    private val geometryService: GeometryServicePort
+) : GeometryProviderPort {
     override fun createPoint(
         lon: Double,
         lat: Double,
@@ -27,7 +30,7 @@ class GeometryProviderAdapter : GeometryProviderPort {
         start: Point,
         end: Point
     ): Double {
-        return geometryService.distance(start.toExternal(), end.toExternal())
+        return measurementService.getHaversineDistance(start.toExternal(), end.toExternal())
     }
 
     override fun findPointsInsideCircle(
@@ -38,7 +41,7 @@ class GeometryProviderAdapter : GeometryProviderPort {
         val listPoints = points.map {
             it.toExternal()
         }
-        return geometryService.findPointsInsideCircle(
+        return measurementService.findPointsInsideCircle(
             points = listPoints,
             radius = radius,
             center = center.toExternal()).map {
@@ -46,15 +49,15 @@ class GeometryProviderAdapter : GeometryProviderPort {
         }
     }
 
-    override fun getLengthOfPath(path: LineString): Double {
-        return geometryService.getLengthOfPath(path.toExternal())
+    override fun getLengthOfLineString(path: LineString): Double {
+        return measurementService.getLengthOfLineString(path.toExternal())
     }
 
     override fun findPathAlongPath(
         path: LineString,
         distanceAlong: Double
     ): LineString? {
-        return geometryService.findPathAlongPath(
+        return measurementService.findPathAlongPath(
             path.toExternal(),
             distanceAlong)?.toDomain()
     }
@@ -63,7 +66,7 @@ class GeometryProviderAdapter : GeometryProviderPort {
         path: LineString,
         distanceAlong: Double
     ): Point? {
-        return geometryService.findPointAlongPath(
+        return measurementService.findPointAlongPath(
             path.toExternal(),
             distanceAlong)?.toDomain()
     }

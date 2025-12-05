@@ -1,4 +1,4 @@
-package com.quest.evrouting.algorithm.config.utils
+package com.quest.evrouting.algorithm.utils
 
 enum class RoutingProfile(val value: String) {
     DRIVING("driving-traffic"),

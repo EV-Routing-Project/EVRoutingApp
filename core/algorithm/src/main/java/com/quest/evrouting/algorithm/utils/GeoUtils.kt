@@ -1,4 +1,4 @@
-package com.quest.evrouting.algorithm.config.utils
+package com.quest.evrouting.algorithm.utils
 
 object GeoUtils {
       const val MAX_LEVEL: Int = 64

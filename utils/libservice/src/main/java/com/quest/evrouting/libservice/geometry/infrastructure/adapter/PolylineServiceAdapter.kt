@@ -2,11 +2,11 @@ package com.quest.evrouting.libservice.geometry.infrastructure.adapter
 
 import com.quest.evrouting.libservice.geometry.infrastructure.mapper.toDomain
 import com.quest.evrouting.libservice.geometry.infrastructure.mapper.toExternal
-import com.quest.evrouting.libservice.geometry.domain.port.PolylinePort
+import com.quest.evrouting.libservice.geometry.domain.port.PolylineServicePort
 import com.quest.evrouting.libservice.geometry.domain.model.LineString
 import com.mapbox.geojson.utils.PolylineUtils as ExternalPolylineUtils
 
-class PolylineAdapter: PolylinePort {
+class PolylineServiceAdapter: PolylineServicePort {
     override fun decode(encodedPath: String, precision: Int): LineString? {
         val points = ExternalPolylineUtils.decode(encodedPath, precision).map {
             it.toDomain()

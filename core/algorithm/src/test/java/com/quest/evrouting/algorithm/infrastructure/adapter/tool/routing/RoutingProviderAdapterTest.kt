@@ -1,6 +1,6 @@
 package com.quest.evrouting.algorithm.infrastructure.adapter.tool.routing
 
-import com.quest.evrouting.algorithm.config.utils.RoutingProfile
+import com.quest.evrouting.algorithm.utils.RoutingProfile
 import com.quest.evrouting.algorithm.domain.model.Point
 import com.quest.evrouting.algorithm.domain.port.tool.routing.RoutingProviderPort
 import com.quest.evrouting.configuration.secrets.PropertiesConfig
