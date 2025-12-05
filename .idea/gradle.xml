@@ -18,6 +18,7 @@
             <option value="$PROJECT_DIR$/utils" />
             <option value="$PROJECT_DIR$/utils/apiservice" />
             <option value="$PROJECT_DIR$/utils/libservice" />
+            <option value="$PROJECT_DIR$/utils/secrets" />
           </set>
         </option>
       </GradleProjectSettings>

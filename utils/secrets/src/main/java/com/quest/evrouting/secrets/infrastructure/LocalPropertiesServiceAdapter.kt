@@ -1,15 +1,16 @@
-package com.quest.evrouting.configuration.secrets.model
+package com.quest.evrouting.secrets.infrastructure
 
+import com.quest.evrouting.secrets.domain.PropertiesServicePort
 import java.io.File
 import java.io.FileInputStream
 import java.net.URLDecoder
 import java.util.Properties
 import kotlin.io.path.exists
 
-class Property(
-    private val filePath: String,
+class LocalPropertiesServiceAdapter(
+    private val filePath: String = "secrets.properties",
     private val defaultFilePath: String = "defaults.properties"
-) {
+) : PropertiesServicePort {
     private val properties: Properties by lazy {
         loadProperties(filePath, defaultFilePath)
     }
@@ -43,15 +44,6 @@ class Property(
             }
         }
     }
-
-    fun getProperty(key: String, defaultValue: String = ""): String {
-        return properties.getProperty(key, defaultValue)
-    }
-
-    fun getAllPropertyNames(): Set<String> {
-        return properties.stringPropertyNames()
-    }
-
     fun findProjectRoot(): File? {
         val classUrl = this::class.java.protectionDomain.codeSource.location
         var currDir = try {
@@ -68,5 +60,21 @@ class Property(
             currDir = currDir.parentFile ?: return null
         }
         return null
+    }
+
+    override fun getProperty(key: String, defaultValue: String): String {
+        return properties.getProperty(key, defaultValue)
+    }
+
+    override fun getAllPropertyNames(): Set<String> {
+        return properties.stringPropertyNames()
+    }
+
+    override fun getMapboxApiToken(): String {
+        return getProperty("MAPBOX_API_TOKEN")
+    }
+
+    override fun getMapsApiKey(): String {
+        return getProperty("MAPS_API_KEY")
     }
 }

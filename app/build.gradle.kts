@@ -9,7 +9,7 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.quest.evrounting.phone"
+        applicationId = "com.quest.evrouting.phone"
         minSdk = 28
         targetSdk = 36
         versionCode = 1

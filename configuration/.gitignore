@@ -2,4 +2,4 @@
 
 #Secrets
 /secrets.properties
-secrets.properties
+../utils/secrets/secrets.properties
