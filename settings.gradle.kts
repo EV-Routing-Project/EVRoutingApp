@@ -30,3 +30,5 @@ include(":core:data")
 include(":utils:apiservice")
 include(":utils:libservice")
 include(":utils:secrets")
+
+include(":frontend")

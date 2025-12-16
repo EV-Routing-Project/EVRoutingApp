@@ -1,0 +1,87 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "CS ChargePoint",
+        "quantity": 4,
+        "distance": ""
+      },
+      "geometry": {
+        "coordinates": [
+          12.646147456834768,
+          42.50447658419881
+        ],
+        "type": "Point"
+      },
+      "id": 0
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Type 2 ChargePoint",
+        "quantity": 20
+      },
+      "geometry": {
+        "coordinates": [
+          12.65515630102297,
+          42.51384756658098
+        ],
+        "type": "Point"
+      },
+      "id": 1
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ahihi ChargePoint",
+        "quantity": 23
+      },
+      "geometry": {
+        "coordinates": [
+          12.643909074265366,
+          42.544017870640516
+        ],
+        "type": "Point"
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "White ChargePoint",
+        "quantity": 12
+      },
+      "geometry": {
+        "coordinates": [
+          12.61958938690654,
+          42.54907281614126
+        ],
+        "type": "Point"
+      },
+      "id": 3
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "distance": "1.18 km",
+        "name": "line",
+        "quantity": ""
+      },
+      "geometry": {
+        "coordinates": [
+          [
+            12.655091759708313,
+            42.51387135373068
+          ],
+          [
+            12.646057837339583,
+            42.50445285672873
+          ]
+        ],
+        "type": "LineString"
+      },
+      "id": 4
+    }
+  ]
+}

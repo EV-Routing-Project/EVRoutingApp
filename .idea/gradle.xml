@@ -14,6 +14,7 @@
             <option value="$PROJECT_DIR$/core" />
             <option value="$PROJECT_DIR$/core/algorithm" />
             <option value="$PROJECT_DIR$/core/data" />
+            <option value="$PROJECT_DIR$/frontend" />
             <option value="$PROJECT_DIR$/utils" />
             <option value="$PROJECT_DIR$/utils/apiservice" />
             <option value="$PROJECT_DIR$/utils/libservice" />
