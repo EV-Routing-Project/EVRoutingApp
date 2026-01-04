@@ -73,116 +73,116 @@ class TestActivity : ComponentActivity() {
                 }
             }
 
-//            Scaffold (
-//                floatingActionButton = {
-//                    FloatingActionButton(
-//                        modifier = Modifier.padding(16.dp),
-//                        onClick = {
-//                            val camera = cameraOptions {
-//                                center(centerCoordinate)
-//                                zoom(11.0)
-//                            }
-//                            val animationOptions = MapAnimationOptions.Builder()
-//                                .duration(3000L)
-//                                .build()
-//                            mapViewportState.flyTo(camera, animationOptions)
-//                        },
-//                        shape = RoundedCornerShape(16.dp),
-//                    ) {
-//                        Text(modifier = Modifier.padding(10.dp), text = "Recenter Map")
-//                    }
-//                }
-//            ) {
-//                paddingValues ->
-//                MapboxMap(
-//                    Modifier.fillMaxSize().padding(paddingValues),
-//                    mapViewportState = mapViewportState,
-//                    style = {
-//                        MapboxStandardStyle(
-//                            standardStyleState = rememberStandardStyleState {
-//                                configurationsState.apply {
-//                                    lightPreset = LightPresetValue.DAWN
-//                                    theme = ThemeValue.FADED
-//                                }
-//                            }
-//                        )
-//                    }
-//                ) {
-//                    val marker = rememberIconImage(R.drawable.red_marker_official)
-//                    featureCollection?.features()?.forEach { feature ->
-//                        val geometry = feature.geometry()
-//                        if (geometry is Point){
-//                            val point = geometry
-//                            PointAnnotation(point = point){
-//                                iconImage = marker
-//
-//                                val chargePointName = feature.properties()?.get("name")?.asString
-//                                val quantity = feature.properties()?.get("quantity")?.asInt
-//
-//                                interactionsState.onClicked {
-//                                    val message = "$chargePointName: $quantity connections"
-//                                    Toast.makeText(
-//                                        this@TestActivity,
-//                                        message,
-//                                        Toast.LENGTH_SHORT
-//                                    ).show()
-//                                    true
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-
-
-            MapboxMap(
-                Modifier.fillMaxSize(),
-                mapViewportState = rememberMapViewportState {
-                    setCameraOptions {
-                        zoom(12.85)
-                        center(Point.fromLngLat(12.64630, 42.50530))
-                        pitch(61.01)
-                        bearing(15.77)
-                    }
-                },
-                style = {
-                    MapboxStandardStyle(
-                        standardStyleState = rememberStandardStyleState {
-                            configurationsState.apply {
-                                lightPreset = LightPresetValue.DAWN
-                                theme = ThemeValue.FADED
+            Scaffold (
+                floatingActionButton = {
+                    FloatingActionButton(
+                        modifier = Modifier.padding(16.dp),
+                        onClick = {
+                            val camera = cameraOptions {
+                                center(centerCoordinate)
+                                zoom(11.0)
                             }
-                        }
-                    )
+                            val animationOptions = MapAnimationOptions.Builder()
+                                .duration(3000L)
+                                .build()
+                            mapViewportState.flyTo(camera, animationOptions)
+                        },
+                        shape = RoundedCornerShape(16.dp),
+                    ) {
+                        Text(modifier = Modifier.padding(10.dp), text = "Recenter Map")
+                    }
                 }
+            ) {
+                paddingValues ->
+                MapboxMap(
+                    Modifier.fillMaxSize().padding(paddingValues),
+                    mapViewportState = mapViewportState,
+                    style = {
+                        MapboxStandardStyle(
+                            standardStyleState = rememberStandardStyleState {
+                                configurationsState.apply {
+                                    lightPreset = LightPresetValue.DAWN
+                                    theme = ThemeValue.FADED
+                                }
+                            }
+                        )
+                    }
+                ) {
+                    val marker = rememberIconImage(R.drawable.red_marker_official)
+                    featureCollection?.features()?.forEach { feature ->
+                        val geometry = feature.geometry()
+                        if (geometry is Point){
+                            val point = geometry
+                            PointAnnotation(point = point){
+                                iconImage = marker
 
+                                val chargePointName = feature.properties()?.get("name")?.asString
+                                val quantity = feature.properties()?.get("quantity")?.asInt
 
-            )
-            {
-                val marker = rememberIconImage(R.drawable.red_marker_official)
-                featureCollection?.features()?.forEach { feature ->
-                    val geometry = feature.geometry()
-                    if (geometry is Point){
-                        val point = geometry
-                        PointAnnotation(point = point){
-                            iconImage = marker
-
-                            val chargePointName = feature.properties()?.get("name")?.asString
-                            val quantity = feature.properties()?.get("quantity")?.asInt
-
-                            interactionsState.onClicked {
-                                val message = "$chargePointName: $quantity connections"
-                                Toast.makeText(
-                                    this@TestActivity,
-                                    message,
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                                true
+                                interactionsState.onClicked {
+                                    val message = "$chargePointName: $quantity connections"
+                                    Toast.makeText(
+                                        this@TestActivity,
+                                        message,
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                    true
+                                }
                             }
                         }
                     }
                 }
             }
+
+
+//            MapboxMap(
+//                Modifier.fillMaxSize(),
+//                mapViewportState = rememberMapViewportState {
+//                    setCameraOptions {
+//                        zoom(12.85)
+//                        center(Point.fromLngLat(12.64630, 42.50530))
+//                        pitch(61.01)
+//                        bearing(15.77)
+//                    }
+//                },
+//                style = {
+//                    MapboxStandardStyle(
+//                        standardStyleState = rememberStandardStyleState {
+//                            configurationsState.apply {
+//                                lightPreset = LightPresetValue.DAWN
+//                                theme = ThemeValue.FADED
+//                            }
+//                        }
+//                    )
+//                }
+//
+//
+//            )
+//            {
+//                val marker = rememberIconImage(R.drawable.red_marker_official)
+//                featureCollection?.features()?.forEach { feature ->
+//                    val geometry = feature.geometry()
+//                    if (geometry is Point){
+//                        val point = geometry
+//                        PointAnnotation(point = point){
+//                            iconImage = marker
+//
+//                            val chargePointName = feature.properties()?.get("name")?.asString
+//                            val quantity = feature.properties()?.get("quantity")?.asInt
+//
+//                            interactionsState.onClicked {
+//                                val message = "$chargePointName: $quantity connections"
+//                                Toast.makeText(
+//                                    this@TestActivity,
+//                                    message,
+//                                    Toast.LENGTH_SHORT
+//                                ).show()
+//                                true
+//                            }
+//                        }
+//                    }
+//                }
+//            }
         }
     }
 

@@ -1,0 +1,13 @@
+package com.quest.evrouting.libservice.geometry.infrastructure.mapper
+
+import com.quest.evrouting.libservice.geometry.utils.GeometryUnit
+import com.mapbox.turf.TurfConstants
+
+fun GeometryUnit.toExternal(): String {
+    return when(this){
+        GeometryUnit.UNIT_CENTIMETERS -> TurfConstants.UNIT_CENTIMETERS
+        GeometryUnit.UNIT_METERS -> TurfConstants.UNIT_METERS
+        GeometryUnit.UNIT_KILOMETERS -> TurfConstants.UNIT_KILOMETERS
+        else -> TurfConstants.UNIT_METERS
+    }
+}

@@ -1,21 +1,40 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("org.jetbrains.kotlin.plugin.serialization")
+    id("kotlin-parcelize")
+
+//    id("kotlin-kapt") // Cần thiết cho Hilt
+//    id("com.google.dagger.hilt.android")
 }
 
 android {
-    namespace = "com.quest.evrounting.phone"
+    namespace = "com.quest.evrouting.phone"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.quest.evrounting.phone"
+        applicationId = "com.quest.evrouting.phone"
         minSdk = 28
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+            // Đọc token từ local.properties
+            val localProperties = Properties()
+            val localPropertiesFile = rootProject.file("local.properties")
+            if (localPropertiesFile.exists()) {
+                localProperties.load(localPropertiesFile.inputStream())
+            }
+            val mapboxAccessToken = localProperties.getProperty("MAPBOX_ACCESS_TOKEN", "")
+
+            // Cung cấp token cho Manifest thông qua manifestPlaceholders
+            manifestPlaceholders["MAPBOX_ACCESS_TOKEN"] = mapboxAccessToken
+            buildConfigField("String", "MAPBOX_ACCESS_TOKEN", "\"$mapboxAccessToken\"")
     }
 
     buildTypes {
@@ -36,6 +55,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -56,4 +76,33 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.kotlinx.serialization)
+    implementation(libs.okhttp)
+    implementation(libs.kotlinx.serialization.json)
+
+    // Test gọi API
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0") // Đảm bảo phiên bản khớp với okhttp
+
+    implementation("com.mapbox.maps:android-ndk27:11.17.0")
+    implementation("com.mapbox.extension:maps-compose-ndk27:11.17.0")
+
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.4")
+
+    // Chuyển trang
+    implementation("androidx.navigation:navigation-compose:2.7.7")
+
+    implementation("androidx.compose.material:material-icons-extended-android:1.6.8")
+
+//    // Hilt Core
+//    implementation("com.google.dagger:hilt-android:2.51.1")
+//    kapt("com.google.dagger:hilt-compiler:2.51.1")
+//
+//    // Hilt cho ViewModel (để sửa lỗi Unresolved reference)
+//    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 }
+
+//kapt {
+//    correctErrorTypes = true
+//}

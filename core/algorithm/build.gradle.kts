@@ -17,6 +17,9 @@ kotlin {
 dependencies{
     implementation(project(":utils:apiservice"))
     implementation(project(":utils:libservice"))
+    implementation(project(":configuration"))
+    implementation(project(":core:data"))
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.retrofit)
+    implementation(libs.junit)
 }

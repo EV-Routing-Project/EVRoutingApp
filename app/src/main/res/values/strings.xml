@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">EV Rounting App</string>
+    <string name="find_sequential_route_description">Find sequential route</string>
+    <string name="recenter_map_description">Recenter map</string>
 </resources>
