@@ -26,14 +26,10 @@ class SearchViewModel : ViewModel() { // TODO: Sẽ inject Repository vào đây
     private val _uiState = MutableStateFlow(SearchUiState())
     val uiState: StateFlow<SearchUiState> = _uiState.asStateFlow()
 
-    // Một Flow riêng để quản lý truy vấn tìm kiếm và áp dụng debounce
     private val _searchQuery = MutableStateFlow("")
 
     init {
-        // Tải lịch sử tìm kiếm ban đầu
         loadRecentHistory()
-
-        // Lắng nghe sự thay đổi của _searchQuery
         viewModelScope.launch {
             _searchQuery
                 .debounce(2000L) // Chờ 2s sau khi người dùng ngừng gõ
@@ -41,14 +37,12 @@ class SearchViewModel : ViewModel() { // TODO: Sẽ inject Repository vào đây
                     if (query.length > 2) {
                         searchPlaces(query)
                     } else {
-                        // Nếu query quá ngắn, xóa kết quả tìm kiếm và hiển thị lại lịch sử
                         _uiState.update { it.copy(searchResults = emptyList()) }
                     }
                 }
         }
     }
 
-    // Hàm này sẽ được gọi từ UI
     fun onSearchQueryChanged(newQuery: String) {
         _searchQuery.value = newQuery
         _uiState.update { it.copy(searchQuery = newQuery) }
@@ -57,7 +51,6 @@ class SearchViewModel : ViewModel() { // TODO: Sẽ inject Repository vào đây
     private fun searchPlaces(query: String) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
-            // ---- GIẢ LẬP GỌI API ----
             kotlinx.coroutines.delay(500) // Giả lập độ trễ mạng
             val fakeResults = listOf(
                 Place("res1", "Gợi ý cho '$query' 1", "Địa chỉ gợi ý 1"),
@@ -69,7 +62,6 @@ class SearchViewModel : ViewModel() { // TODO: Sẽ inject Repository vào đây
                     searchResults = fakeResults
                 )
             }
-            // ------------------------
             // TODO: Thay thế phần giả lập bằng lệnh gọi Repository thực sự
         }
     }

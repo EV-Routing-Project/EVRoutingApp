@@ -9,6 +9,5 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class DirectionsResponseDto(
-    // 1 Directions có thể có nhiều lộ trình Route
-    @SerialName("routes") val routes: List<RouteDto>,
+    @SerialName("paths") val paths: List<Path>
 )

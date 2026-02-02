@@ -1,31 +1,35 @@
 package com.quest.evrouting.phone.data.remote.api.backendServer.staticc
 
-import com.quest.evrouting.phone.data.remote.api.backendServer.staticc.dto.response.ChargePointResponseDto
-import com.quest.evrouting.phone.domain.model.ChargePoint
-import com.quest.evrouting.phone.domain.model.Connection
+import com.quest.evrouting.phone.data.remote.api.backendServer.staticc.dto.response.Connector as ConnectorDto
+import com.quest.evrouting.phone.data.remote.api.backendServer.staticc.dto.response.Location as LocationDto
+import com.quest.evrouting.phone.data.remote.api.backendServer.staticc.dto.response.POI as PoiDto
+import com.quest.evrouting.phone.domain.model.Connector
+import com.quest.evrouting.phone.domain.model.Location
+import com.quest.evrouting.phone.domain.model.POI
 
-fun ChargePointResponseDto.toChargePoint(): ChargePoint {
-    val properties = this.properties
-    val totalQuantity = properties.connections.sumOf { it.quantity }
-    val location = this.geometry.toMapboxPoint()
+fun PoiDto.toDomainPoi(): POI {
+    return POI(
+        id = this.id,
+        locationId = this.locationId,
+        location = this.location.toDomainLocation(),
+        information = info,
+        status = this.status,
+        connectors = this.connectors.map { it.toDomainConnector() }
+    )
+}
 
-    // Chuyển đổi danh sách Connection DTO sang Connection Domain
-    val domainConnections = properties.connections.map { connectionDto ->
-        Connection(
-            typeName = connectionDto.connectionTypeName,
-            currentType = connectionDto.currentTypeName,
-            powerKw = connectionDto.powerKw,
-            quantity = connectionDto.quantity
-        )
-    }
+fun LocationDto.toDomainLocation(): Location {
+    return Location(
+        latitude = this.lat,
+        longitude = this.lon
+    )
+}
 
-    return ChargePoint(
-        id = properties.id,
-        name = properties.name,
-        address = properties.address,
-        town = properties.town,
-        totalQuantity = totalQuantity,
-        point = location,
-        connections = domainConnections
+fun ConnectorDto.toDomainConnector(): Connector {
+    return Connector(
+        connectorType = this.connectorType,
+        powerType = this.powerType,
+        connectorFormat = this.connectorFormat,
+        maxElectricPower = this.maxElectricPower
     )
 }

@@ -33,14 +33,11 @@ fun AppNavigation() {
 
 
             MapScreen(
-                // Truyền hàm điều hướng vào MapScreen
                 onSearchClick = {
                     navController.navigate(AppDestinations.SEARCH_ROUTE)
                 },
-                // Truyền dữ liệu mới nhận được vào MapScreen
                 newOrigin = origin,
                 newDestination = destination,
-                // Hàm để xóa dữ liệu sau khi đã sử dụng
                 onNewRouteHandled = {
                     savedStateHandle.remove<Place>(AppDestinations.RESULT_ORIGIN_PLACE)
                     savedStateHandle.remove<Place>(AppDestinations.RESULT_DESTINATION_PLACE)
@@ -49,7 +46,6 @@ fun AppNavigation() {
         }
         composable(AppDestinations.SEARCH_ROUTE) {
             SearchScreen(
-                // Truyền hàm để quay lại MapScreen VÀ gửi dữ liệu
                 onNavigateBackWithResult = { origin, destination ->
                     navController.previousBackStackEntry
                         ?.savedStateHandle
@@ -59,7 +55,6 @@ fun AppNavigation() {
                         ?.set(AppDestinations.RESULT_DESTINATION_PLACE, destination)
                     navController.popBackStack()
                 },
-                // Truyền hàm để quay lại bình thường
                 onBackClick = {
                     navController.popBackStack()
                 }

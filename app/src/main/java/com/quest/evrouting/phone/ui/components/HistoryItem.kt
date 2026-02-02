@@ -19,43 +19,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.quest.evrouting.phone.domain.model.Place
 
-//@Composable
-//fun HistoryItem(
-//    place: Place,
-//    onItemClick: (Place) -> Unit,
-//    modifier: Modifier = Modifier
-//) {
-//    Row(
-//        modifier = modifier
-//            .fillMaxWidth()
-//            .clickable { onItemClick(place) } // Cho phép nhấn vào cả hàng
-//            .padding(vertical = 12.dp),
-//        verticalAlignment = Alignment.CenterVertically
-//    ) {
-//        Icon(
-//            imageVector = Icons.Default.History,
-//            contentDescription = "Recent search",
-//            tint = MaterialTheme.colorScheme.onSurfaceVariant
-//        )
-//        Spacer(modifier = Modifier.width(16.dp))
-//        Column(modifier = Modifier.weight(1f)) {
-//            Text(
-//                text = place.primaryText,
-//                style = MaterialTheme.typography.bodyLarge,
-//                color = MaterialTheme.colorScheme.onSurface
-//            )
-//            // Chỉ hiển thị dòng thứ 2 nếu nó không rỗng
-//            if (place.secondaryText?.isNotEmpty() == true) {
-//                Text(
-//                    text = place.secondaryText,
-//                    style = MaterialTheme.typography.bodyMedium,
-//                    color = MaterialTheme.colorScheme.onSurfaceVariant
-//                )
-//            }
-//        }
-//    }
-//}
-
 @Composable
 fun HistoryItem(
     place: Place,
@@ -80,7 +43,7 @@ fun HistoryItem(
                 text = place.primaryText,
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurface,
-                // -> 2. XỬ LÝ TRÀN DÒNG
+                // XỬ LÝ TRÀN DÒNG
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -89,7 +52,7 @@ fun HistoryItem(
                     text = secondary,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    // -> 2. XỬ LÝ TRÀN DÒNG
+                    // XỬ LÝ TRÀN DÒNG
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )

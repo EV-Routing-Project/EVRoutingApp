@@ -6,6 +6,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class GeocodingResponseDto(
-    @SerialName("features")
-    val features: List<FeatureDto>
+    @SerialName("features") val features: List<FeatureDto>
 )

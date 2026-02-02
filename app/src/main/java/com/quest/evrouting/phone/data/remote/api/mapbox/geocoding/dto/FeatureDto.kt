@@ -5,6 +5,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class FeatureDto(
-    @SerialName("center")
-    val center: List<Double> // Mapbox trả về [longitude, latitude]
+    @SerialName("center") val center: List<Double> // Mapbox trả về [longitude, latitude]
 )

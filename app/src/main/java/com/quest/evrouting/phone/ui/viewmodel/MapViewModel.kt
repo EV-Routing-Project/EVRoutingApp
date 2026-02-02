@@ -9,18 +9,15 @@ import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.dsl.cameraOptions
 import com.mapbox.maps.plugin.animation.MapAnimationOptions
-import com.quest.evrouting.phone.domain.model.ChargePoint
 import com.quest.evrouting.phone.domain.model.EVCar
+import com.quest.evrouting.phone.domain.model.POI
 import com.quest.evrouting.phone.domain.model.Place
-import com.quest.evrouting.phone.domain.model.Route
+import com.quest.evrouting.phone.domain.model.Path
 import com.quest.evrouting.phone.domain.model.Vehicle
-import com.quest.evrouting.phone.domain.repository.ChargePointRepository
-import com.quest.evrouting.phone.domain.repository.DirectionsRepository
 import com.quest.evrouting.phone.domain.repository.EVRouteRepository
 import com.quest.evrouting.phone.domain.repository.GeocodingRepository
-import com.quest.evrouting.phone.domain.usecase.GetChargePointsUseCase
+import com.quest.evrouting.phone.domain.usecase.GetPoisUseCase
 import com.quest.evrouting.phone.domain.usecase.SimulateTripUseCase
-import com.quest.evrouting.phone.util.Constants.MAPBOX_DRIVING_PROFILE
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -31,17 +28,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.io.IOException
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 
-// Trạng thái UI của màn hình Map
 data class MapUiState(
     val isLoadingPoints: Boolean = false,
     val isFindingRoute: Boolean = false,
-    val chargePoints: List<ChargePoint> = emptyList(),
+    val pois: List<POI> = emptyList(),
     val errorMessage: String? = null,
-    val centerCoordinate: Point = Point.fromLngLat(12.64630, 42.50530), // Tọa độ trung tâm từ TestActivity
+    val centerCoordinate: Point = Point.fromLngLat(12.64630, 42.50530), // Tọa độ trung tâm mặc định
     val origin: PlaceWithCoord? = null,
     val destination: PlaceWithCoord? = null
 ) {
@@ -49,7 +42,6 @@ data class MapUiState(
         get() = isLoadingPoints || isFindingRoute
 }
 
-// Lớp mới để giữ cả Place gốc và tọa độ đã tìm được
 data class PlaceWithCoord(val place: Place, val point: Point)
 
 data class TripState(
@@ -59,14 +51,12 @@ data class TripState(
     val isCharging: Boolean = false
 )
 
-// Lớp niêm phong cho các sự kiện UI (chỉ có một lần)
 sealed class UiEvent {
     data class ShowToast(val message: String) : UiEvent()
 }
 
 class MapViewModel(
-    private val getChargePointsUseCase: GetChargePointsUseCase,
-//    private val directionsRepository: DirectionsRepository,
+    private val getPoisUseCase: GetPoisUseCase,
     private val evRouteRepository: EVRouteRepository,
     private val geocodingRepository: GeocodingRepository,
     private val simulateTripUseCase: SimulateTripUseCase,
@@ -75,13 +65,12 @@ class MapViewModel(
 
     // --- STATE MANAGEMENT ---
 
-    private val _route = mutableStateOf<Route?>(null)
-    val route: State<Route?> = _route
+    private val _route = mutableStateOf<Path?>(null)
+    val route: State<Path?> = _route
 
     private val _uiState = mutableStateOf(MapUiState())
     val uiState: State<MapUiState> = _uiState
 
-    // State riêng cho việc mô phỏng xe. Dùng StateFlow để phù hợp với coroutine flow.
     private val _tripState = MutableStateFlow(
         TripState(
             vehicle = EVCar(0.0, 0.0, 0.0),
@@ -95,22 +84,21 @@ class MapViewModel(
     val uiEvent = _uiEvent.receiveAsFlow()
 
 
-    // --- JOB MANAGEMENT ---
     // Chỉ cần một job để quản lý toàn bộ quá trình tìm đường và mô phỏng.
     private var findAndSimulateJob: Job? = null
 
 
     init {
         Log.d("MapViewModel", "ViewModel initialized. Bắt đầu tải trạm sạc.")
-        loadChargePoints()
+        loadPois()
     }
 
-    private fun loadChargePoints() {
+    private fun loadPois() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoadingPoints = true, errorMessage = null)
             try {
-                val points = getChargePointsUseCase()
-                _uiState.value = _uiState.value.copy(isLoadingPoints = false, chargePoints = points)
+                val points = getPoisUseCase()
+                _uiState.value = _uiState.value.copy(isLoadingPoints = false, pois = points)
                 Log.d("MapViewModel", "Tải thành công ${points.size} trạm sạc.")
             } catch (e: IOException) {
                 Log.e("MapViewModel", "Lỗi mạng khi tải trạm sạc.", e)
@@ -144,32 +132,28 @@ class MapViewModel(
     }
 
 
-    // Xử lý khi người dùng nhấn vào một điểm sạc
-    fun onChargePointClicked(chargePoint: ChargePoint) {
+    fun onPoiClicked(poi: POI) {
         viewModelScope.launch {
-            // Sử dụng buildString để tạo một chuỗi thông tin chi tiết, dễ đọc.
             val message = buildString {
-                append("Trạm: ${chargePoint.name}\n") // Tên trạm
-                append("Địa chỉ: ${chargePoint.address}, ${chargePoint.town}\n") // Địa chỉ
-                append("Tổng số cổng sạc: ${chargePoint.totalQuantity}\n") // Tổng số lượng
+                append("ID: ${poi.id}\n")
+                append("Trạng thái: ${poi.status}\n")
+                append("Địa chỉ: ${poi.information["address"]}, ${poi.information["city"]}\n")
                 append("----------\n")
                 append("Các loại cổng sạc:\n")
 
-                // Lặp qua danh sách các loại cổng sạc và thêm thông tin của từng loại
-                if (chargePoint.connections.isEmpty()) {
+                if (poi.connectors.isEmpty()) {
                     append("- Không có thông tin chi tiết.")
                 } else {
-                    chargePoint.connections.forEach { conn ->
-                        append("- ${conn.typeName} (${conn.powerKw} kW): ${conn.quantity} cổng\n")
+                    poi.connectors.forEach { conn ->
+                        append("- Loại: ${conn.connectorType}, Định dạng: ${conn.connectorFormat}\n")
+                        append("  Công suất: ${conn.maxElectricPower} W, Nguồn: ${conn.powerType}\n")
                     }
                 }
             }
-            // Gửi sự kiện để UI hiển thị Toast với thông điệp đã tạo
             _uiEvent.send(UiEvent.ShowToast(message))
         }
     }
 
-    // Xử lý khi người dùng nhấn nút "Recenter Map"
     fun onRecenterMapClicked(): Pair<CameraOptions, MapAnimationOptions> {
         val camera = cameraOptions {
             center(_uiState.value.centerCoordinate)
@@ -183,71 +167,6 @@ class MapViewModel(
         return Pair(camera, animationOptions)
     }
 
-//    private fun findRoute(points: List<Point>) {
-//        // >>> THÊM LOG Ở ĐÂY
-//        Log.d("MapViewModel", "findRoute called with ${points.size} points.")
-//
-//        viewModelScope.launch {
-//            _uiState.value = _uiState.value.copy(isFindingRoute = true, errorMessage = null)
-//            _route.value = null // Xóa lộ trình cũ trước khi tìm lộ trình mới
-//            try {
-//                // >>> THÊM LOG Ở ĐÂY
-//                Log.d("MapViewModel", "Calling directionsRepository.getDirections...")
-//
-//                // Gọi repository để lấy dữ liệu lộ trình
-//                val foundRoute = directionsRepository.getDirections(
-//                    points = points,
-//                    profile = MAPBOX_DRIVING_PROFILE // Hoặc "walking", "cycling"
-//                )
-//                // >>> THÊM LOG Ở ĐÂY
-//                Log.d("MapViewModel", "Successfully found route. Geometry length: ${foundRoute?.geometry?.length}")
-//
-//                _route.value = foundRoute // Cập nhật lộ trình mới
-//            } catch (e: IOException) {
-//                // >>> THÊM LOG Ở ĐÂY
-//                Log.e("MapViewModel", "Network error finding route.", e)
-//
-//                _uiState.value = _uiState.value.copy(
-//                    errorMessage = "Network error: Could not find the route."
-//                )
-//                e.printStackTrace()
-//            } catch (e: Exception) {
-//                // >>> THÊM LOG Ở ĐÂY
-//                Log.e("MapViewModel", "An unexpected error occurred while finding route.", e)
-//
-//                _uiState.value = _uiState.value.copy(
-//                    errorMessage = "Failed to find route: ${e.message}"
-//                )
-//                e.printStackTrace()
-//            } finally {
-//                // Dù thành công hay thất bại, cũng kết thúc trạng thái loading.
-//                _uiState.value = _uiState.value.copy(isFindingRoute = false)
-//            }
-//        }
-//    }
-
-//    fun findSequentialRoute() {
-//        // >>> THÊM LOG Ở ĐÂY
-//        Log.d("MapViewModel", "findSequentialRoute triggered.")
-//
-//        val allPoints = _uiState.value.chargePoints
-//        // Cần ít nhất 2 điểm để tạo thành một lộ trình.
-//        if (allPoints.size < 2) {
-//            // >>> THÊM LOG Ở ĐÂY
-//            Log.w("MapViewModel", "Not enough points to create a route. Found only ${allPoints.size} points.")
-//
-//            viewModelScope.launch {
-//                _uiEvent.send(UiEvent.ShowToast("Not enough charge points to create a route."))
-//            }
-//            return
-//        }
-//        // Sắp xếp các điểm theo ID để có một lộ trình nhất quán.
-//        val pointsInOriginalOrder = allPoints.map { it.point }
-//        findRoute(pointsInOriginalOrder)
-//    }
-
-
-    // --- HÀM MỚI ĐỂ XỬ LÝ YÊU CẦU TỪ SEARCHSCREEN ---
     fun findRouteFromPlaces(origin: Place, destination: Place) {
         Log.d("DEBUG_ROUTE", "[ViewModel] Nhận yêu cầu: '${origin.primaryText}' -> '${destination.primaryText}'")
 
@@ -255,47 +174,39 @@ class MapViewModel(
         findAndSimulateJob?.cancel()
 
         findAndSimulateJob = viewModelScope.launch {
-            // Đặt lại các trạng thái trước khi bắt đầu
             _uiState.value = _uiState.value.copy(isFindingRoute = true, errorMessage = null, origin = null, destination = null)
             _route.value = null
             _tripState.value = _tripState.value.copy(isActive = false)
 
             try {
-                // 1. Geocoding song song
+                // Geocoding song song
                 val (originPoint, destinationPoint) = getCoordinates(origin, destination)
                 _uiState.value = _uiState.value.copy(
                     origin = PlaceWithCoord(origin, originPoint),
                     destination = PlaceWithCoord(destination, destinationPoint)
                 )
-
-
-
-
-                // 2. Tạo xe demo
-                // XEM LẠI THÔNG SỐ
+                // Tạo xe demo
                 val demoCar = EVCar(totalPowerKwh = 80.0, currentPowerKwh = 75.0, averageSpeedKmh = 60.0)
 
-
-
-
-
-
-                // 3. Gọi repository tìm đường
-                val newRoute = evRouteRepository.getRoute(
-                    originLon = originPoint.longitude(),
-                    originLat = originPoint.latitude(),
-                    destinationLon = destinationPoint.longitude(),
-                    destinationLat = destinationPoint.latitude(),
-                    powerKwh = demoCar.totalPowerKwh,
-                    currentPower = demoCar.currentPowerKwh
+                val originLocation = com.quest.evrouting.phone.domain.model.Location(
+                    latitude = originPoint.latitude(),
+                    longitude = originPoint.longitude()
+                )
+                val destinationLocation = com.quest.evrouting.phone.domain.model.Location(
+                    latitude = destinationPoint.latitude(),
+                    longitude = destinationPoint.longitude()
                 )
 
-                if (newRoute != null && newRoute.geometry.isNotEmpty()) {
+                val newRoute = evRouteRepository.getRoute(
+                    current = originLocation,
+                    target = destinationLocation
+                )
+
+                if (newRoute != null && newRoute.decodedPolyline.isNotEmpty()) {
                     _route.value = newRoute
                     _uiState.value = _uiState.value.copy(isFindingRoute = false)
                     Log.d("DEBUG_ROUTE", "[ViewModel] Đã nhận lộ trình, bắt đầu lắng nghe mô phỏng từ UseCase.")
 
-                    // 4. GỌI USECASE VÀ LẮNG NGHE KẾT QUẢ
                     simulateTripUseCase.execute(newRoute, demoCar, destinationPoint)
                         .collect { newState ->
                             _tripState.value = newState
@@ -310,19 +221,13 @@ class MapViewModel(
             } catch (e: Exception) {
                 if (e is kotlinx.coroutines.CancellationException) {
                     Log.d("DEBUG_ROUTE", "[ViewModel] Job tìm đường và mô phỏng đã bị hủy.")
-                    // Nếu coroutine bị hủy bởi người dùng, không hiển thị lỗi
                 } else {
                     Log.e("DEBUG_ROUTE", "[ViewModel] Lỗi trong quá trình tìm đường: ${e.message}", e)
                     _uiState.value = _uiState.value.copy(errorMessage = "Lỗi: ${e.message}")
                 }
             } finally {
-                // Dù thành công hay thất bại, cũng kết thúc trạng thái loading.
                 _uiState.value = _uiState.value.copy(isFindingRoute = false)
             }
         }
     }
-
-
-
-
 }

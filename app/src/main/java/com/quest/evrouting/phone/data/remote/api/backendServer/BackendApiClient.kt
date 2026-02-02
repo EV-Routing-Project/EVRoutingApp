@@ -8,17 +8,12 @@ import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 
 object BackendApiClient {
+    private const val BASE_URL = "http://10.0.2.2:8080/"
 
-    // Url vd: http://10.0.2.2:8080/api/directions
-//    private const val BASE_URL = "https://your-backend-url/" // <<< THAY ĐỔI URL NÀY
-    private const val BASE_URL = "https://mocki.io/"
-
-    // 2. Cấu hình Json giống như MapboxApiClient
     private val json = Json {
-        ignoreUnknownKeys = true // Bỏ qua các trường không xác định trong JSON response
+        ignoreUnknownKeys = true
     }
 
-    // 5. Tạo Retrofit instance cho backend
     private val retrofit: Retrofit by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)

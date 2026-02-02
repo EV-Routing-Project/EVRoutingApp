@@ -21,7 +21,7 @@ import com.quest.evrouting.phone.domain.model.Place
 import com.quest.evrouting.phone.ui.components.HistoryItem
 import com.quest.evrouting.phone.ui.components.RecentHistoryList
 import com.quest.evrouting.phone.ui.components.SearchResultsList
-import com.quest.evrouting.phone.ui.components.SearchTextField // <-- Import component đã tạo
+import com.quest.evrouting.phone.ui.components.SearchTextField
 import com.quest.evrouting.phone.ui.viewmodel.SearchViewModel
 
 @Composable
@@ -32,37 +32,33 @@ fun SearchScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    // --- STATE QUẢN LÝ CÁC LỰA CHỌN ---
+    // State lưu trữ lựa chọn người dùng
     var selectedOrigin by remember { mutableStateOf<Place?>(null) }
     var selectedDestination by remember { mutableStateOf<Place?>(null) }
 
-    // --- STATE RIÊNG CHO TỪNG Ô NHẬP LIỆU ---
+    // State lưu trữ văn bản nhập vào
     var originInputText by remember { mutableStateOf("") }
     var destinationInputText by remember { mutableStateOf("") }
 
-    // State để xác định ô nào đang được focus
+    // State xác định ô nào đang được focus
     var isOriginFocused by remember { mutableStateOf(false) }
     var isDestinationFocused by remember { mutableStateOf(false) }
 
-    // Hàm xử lý khi một địa điểm được chọn từ danh sách
     val onPlaceSelected = { place: Place ->
         if (isOriginFocused) {
             selectedOrigin = place
-            originInputText = place.primaryText // Cập nhật text hiển thị
+            originInputText = place.primaryText
         } else if (isDestinationFocused) {
             selectedDestination = place
-            destinationInputText = place.primaryText // Cập nhật text hiển thị
+            destinationInputText = place.primaryText
         }
-        // Xóa query tìm kiếm trong ViewModel để ẩn danh sách kết quả
         viewModel.onSearchQueryChanged("")
     }
 
-    // Biến để quyết định có hiển thị danh sách kết quả hay không
     val showSearchResults = uiState.searchQuery.isNotEmpty()
 
     Surface(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
-            // --- THANH HEADER VỚI NÚT "DONE" ---
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -75,7 +71,6 @@ fun SearchScreen(
                 Spacer(modifier = Modifier.weight(1f))
                 Button(
                     onClick = {
-                        // Logic onClick giờ phải xử lý cả trường hợp gõ tay
                         val originToSend = selectedOrigin ?: Place(
                             id = "manual_origin",
                             primaryText = originInputText.trim(),
@@ -88,7 +83,6 @@ fun SearchScreen(
                         )
                         onNavigateBackWithResult(originToSend, destinationToSend)
                     },
-                    // --- THAY ĐỔI ĐIỀU KIỆN Ở ĐÂY ---
                     enabled = (selectedOrigin != null || originInputText.isNotBlank()) &&
                             (selectedDestination != null || destinationInputText.isNotBlank())
                 ) {
@@ -105,19 +99,17 @@ fun SearchScreen(
                 SearchTextField(
                     modifier = Modifier.onFocusChanged { focusState ->
                         isOriginFocused = focusState.isFocused
-                        // Khi không focus nữa và chưa chọn, xóa query
                         if (!focusState.isFocused && selectedOrigin == null) {
                             viewModel.onSearchQueryChanged("")
                         }
                     },
-                    value = originInputText, // Luôn dùng state riêng
+                    value = originInputText,
                     onValueChange = { newText ->
-                        // Chỉ xóa lựa chọn cũ khi người dùng bắt đầu gõ
                         if (originInputText != newText) {
                             selectedOrigin = null
                         }
                         originInputText = newText
-                        viewModel.onSearchQueryChanged(newText) // Cập nhật ViewModel để tìm kiếm
+                        viewModel.onSearchQueryChanged(newText)
                     },
                     placeholderText = "Your location",
                     icon = Icons.Default.Circle,
@@ -130,19 +122,17 @@ fun SearchScreen(
                 SearchTextField(
                     modifier = Modifier.onFocusChanged { focusState ->
                         isDestinationFocused = focusState.isFocused
-                        // Khi không focus nữa và chưa chọn, xóa query
                         if (!focusState.isFocused && selectedDestination == null) {
                             viewModel.onSearchQueryChanged("")
                         }
                     },
-                    value = destinationInputText, // Luôn dùng state riêng
+                    value = destinationInputText,
                     onValueChange = { newText ->
-                        // Chỉ xóa lựa chọn cũ khi người dùng bắt đầu gõ
                         if (destinationInputText != newText) {
                             selectedDestination = null
                         }
                         destinationInputText = newText
-                        viewModel.onSearchQueryChanged(newText) // Cập nhật ViewModel để tìm kiếm
+                        viewModel.onSearchQueryChanged(newText)
                     },
                     placeholderText = "Choose destination",
                     icon = Icons.Default.LocationOn,

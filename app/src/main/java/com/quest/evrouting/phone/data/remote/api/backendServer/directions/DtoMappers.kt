@@ -1,24 +1,37 @@
 package com.quest.evrouting.phone.data.remote.api.backendServer.directions
 
 import com.mapbox.geojson.LineString
-import com.quest.evrouting.phone.data.remote.api.backendServer.directions.dto.response.RouteDto
-import com.quest.evrouting.phone.domain.model.Route
+import com.quest.evrouting.phone.data.remote.api.backendServer.directions.dto.request.Location as LocationDto
+import com.quest.evrouting.phone.data.remote.api.backendServer.directions.dto.response.Path as PathDto
+import com.quest.evrouting.phone.domain.model.Path
+import com.quest.evrouting.phone.domain.model.Location
 
-fun RouteDto.toRoute(): Route {
-    val decodedGeometry = LineString.fromPolyline(this.geometry, 6).coordinates()
 
-    if (decodedGeometry.isEmpty()) {
-        throw IllegalArgumentException("Không thể giải mã geometry từ API: ${this.geometry}")
+fun PathDto.toPath(): Path {
+    // Tham số 6 là độ chính xác (precision) cho polyline, giá trị 6 là phổ biến cho các API định tuyến.
+    val decodedPolyline = LineString.fromPolyline(this.polyline, 6).coordinates()
+
+    if (decodedPolyline.isEmpty()) {
+        throw IllegalArgumentException("Không thể giải mã polyline từ API: ${this.polyline}")
     }
 
-    val chargePointIds = this.chargePoints.map { chargePointWrapper ->
-        chargePointWrapper.chargePointInfo.id
-    }
+    return Path(
+        decodedPolyline = decodedPolyline,
+        length = this.length,
+        time = this.time
+    )
+}
 
-    return Route(
-        geometry = decodedGeometry,
-        duration = this.duration,
-        distance = this.distance,
-        chargePointsOnRoute = chargePointIds
+fun LocationDto.toLocation(): Location {
+    return Location(
+        latitude = this.lat,
+        longitude = this.lon
+    )
+}
+
+fun Location.toLocationDto(): LocationDto {
+    return LocationDto(
+        lat = this.latitude,
+        lon = this.longitude
     )
 }

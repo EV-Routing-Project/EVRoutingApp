@@ -6,9 +6,6 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     id("org.jetbrains.kotlin.plugin.serialization")
     id("kotlin-parcelize")
-
-//    id("kotlin-kapt") // Cần thiết cho Hilt
-//    id("com.google.dagger.hilt.android")
 }
 
 android {
@@ -95,14 +92,5 @@ dependencies {
 
     implementation("androidx.compose.material:material-icons-extended-android:1.6.8")
 
-//    // Hilt Core
-//    implementation("com.google.dagger:hilt-android:2.51.1")
-//    kapt("com.google.dagger:hilt-compiler:2.51.1")
-//
-//    // Hilt cho ViewModel (để sửa lỗi Unresolved reference)
-//    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
-}
 
-//kapt {
-//    correctErrorTypes = true
-//}
+}

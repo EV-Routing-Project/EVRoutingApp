@@ -8,6 +8,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
+import androidx.compose.material3.DividerDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,9 +38,12 @@ fun SearchResultsList(
             contentPadding = PaddingValues(horizontal = 16.dp)
         ) {
             items(places) { place ->
-                // Tạm thời dùng lại HistoryItem, bạn có thể tạo Composable riêng nếu muốn
                 HistoryItem(place = place, onItemClick = onItemClick)
-                Divider(modifier = Modifier.padding(start = 56.dp))
+                HorizontalDivider(
+                    modifier = Modifier.padding(start = 56.dp),
+                    thickness = DividerDefaults.Thickness,
+                    color = DividerDefaults.color
+                )
             }
         }
     }
