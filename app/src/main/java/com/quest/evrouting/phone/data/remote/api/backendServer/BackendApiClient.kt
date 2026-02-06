@@ -1,6 +1,8 @@
 package com.quest.evrouting.phone.data.remote.api.backendServer
 
+import android.content.Context
 import com.quest.evrouting.phone.data.remote.api.backendServer.directions.DirectionsApiService
+import com.quest.evrouting.phone.data.remote.api.backendServer.directions.MockDirectionsApiService
 import com.quest.evrouting.phone.data.remote.api.backendServer.staticc.ChargePointApiService
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
@@ -21,9 +23,19 @@ object BackendApiClient {
             .build()
     }
 
-    val directionsService: DirectionsApiService by lazy {
-        retrofit.create(DirectionsApiService::class.java)
+//    val directionsService: DirectionsApiService by lazy {
+//        retrofit.create(DirectionsApiService::class.java)
+//    }
+
+
+    private var mockDirectionsService: DirectionsApiService? = null
+    fun getDirectionsService(context: Context): DirectionsApiService {
+        if (mockDirectionsService == null) {
+            mockDirectionsService = MockDirectionsApiService(context.applicationContext)
+        }
+        return mockDirectionsService!!
     }
+
 
     val chargePointsService: ChargePointApiService by lazy {
         retrofit.create(ChargePointApiService::class.java)

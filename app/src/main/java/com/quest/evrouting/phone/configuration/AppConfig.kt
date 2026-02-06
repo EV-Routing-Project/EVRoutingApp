@@ -1,5 +1,6 @@
 package com.quest.evrouting.phone.configuration
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.quest.evrouting.phone.data.repository.EVRouteRepositoryImpl
@@ -12,15 +13,10 @@ import com.quest.evrouting.phone.domain.usecase.*
 import com.quest.evrouting.phone.ui.viewmodel.MapViewModel
 
 object AppConfig {
-    private val poiRepository: PoiRepository by lazy {
-        PoiRepositoryImpl()
-    }
-    private val evRouteRepository: EVRouteRepository by lazy {
-        EVRouteRepositoryImpl()
-    }
-    private val geocodingRepository: GeocodingRepository by lazy {
-        GeocodingRepositoryImpl()
-    }
+    private lateinit var poiRepository: PoiRepository
+    private lateinit var evRouteRepository: EVRouteRepository
+    private lateinit var geocodingRepository: GeocodingRepository
+
     private val getPoisUseCase: GetPoisUseCase by lazy {
         GetPoisUseCase(poiRepository)
     }
@@ -30,6 +26,15 @@ object AppConfig {
             poiRepository = poiRepository
         )
     }
+
+    fun initialize(context: Context) {
+        val appContext = context.applicationContext
+
+        poiRepository = PoiRepositoryImpl()
+        evRouteRepository = EVRouteRepositoryImpl(appContext)
+        geocodingRepository = GeocodingRepositoryImpl()
+    }
+
     val mapViewModelFactory: ViewModelProvider.Factory by lazy {
         object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {

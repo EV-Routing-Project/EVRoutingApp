@@ -10,6 +10,7 @@ import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.dsl.cameraOptions
 import com.mapbox.maps.plugin.animation.MapAnimationOptions
 import com.quest.evrouting.phone.domain.model.EVCar
+import com.quest.evrouting.phone.domain.model.Location
 import com.quest.evrouting.phone.domain.model.POI
 import com.quest.evrouting.phone.domain.model.Place
 import com.quest.evrouting.phone.domain.model.Path
@@ -36,7 +37,9 @@ data class MapUiState(
     val errorMessage: String? = null,
     val centerCoordinate: Point = Point.fromLngLat(12.64630, 42.50530), // Tọa độ trung tâm mặc định
     val origin: PlaceWithCoord? = null,
-    val destination: PlaceWithCoord? = null
+    val destination: PlaceWithCoord? = null,
+    val selectedPoi: POI? = null,
+    val recommendedPoiIds: Set<String>? = null
 ) {
     val isLoading: Boolean
         get() = isLoadingPoints || isFindingRoute
@@ -79,6 +82,9 @@ class MapViewModel(
         )
     )
     val tripState: StateFlow<TripState> = _tripState.asStateFlow()
+
+    private val _cameraTarget = MutableStateFlow<Point?>(null)
+    val cameraTarget: StateFlow<Point?> = _cameraTarget.asStateFlow()
 
     private val _uiEvent = Channel<UiEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
@@ -131,27 +137,12 @@ class MapViewModel(
         }
     }
 
-
     fun onPoiClicked(poi: POI) {
-        viewModelScope.launch {
-            val message = buildString {
-                append("ID: ${poi.id}\n")
-                append("Trạng thái: ${poi.status}\n")
-                append("Địa chỉ: ${poi.information["address"]}, ${poi.information["city"]}\n")
-                append("----------\n")
-                append("Các loại cổng sạc:\n")
+        _uiState.value = _uiState.value.copy(selectedPoi = poi)
+    }
 
-                if (poi.connectors.isEmpty()) {
-                    append("- Không có thông tin chi tiết.")
-                } else {
-                    poi.connectors.forEach { conn ->
-                        append("- Loại: ${conn.connectorType}, Định dạng: ${conn.connectorFormat}\n")
-                        append("  Công suất: ${conn.maxElectricPower} W, Nguồn: ${conn.powerType}\n")
-                    }
-                }
-            }
-            _uiEvent.send(UiEvent.ShowToast(message))
-        }
+    fun onPoiDetailsDismissed() {
+        _uiState.value = _uiState.value.copy(selectedPoi = null)
     }
 
     fun onRecenterMapClicked(): Pair<CameraOptions, MapAnimationOptions> {
@@ -167,51 +158,47 @@ class MapViewModel(
         return Pair(camera, animationOptions)
     }
 
-    fun findRouteFromPlaces(origin: Place, destination: Place) {
-        Log.d("DEBUG_ROUTE", "[ViewModel] Nhận yêu cầu: '${origin.primaryText}' -> '${destination.primaryText}'")
+    fun onCameraTargetHandled() {
+        _cameraTarget.value = null
+    }
 
-        // Hủy job cũ trước khi bắt đầu job mới để tránh chạy song song.
+    fun findRouteFromCoordinates(originPoint: Point, destinationPoint: Point) {
+        Log.d("DEBUG_ROUTE", "[ViewModel] Nhận yêu cầu tìm đường từ tọa độ.")
+
+        // Hủy job cũ trước khi bắt đầu job mới
         findAndSimulateJob?.cancel()
 
         findAndSimulateJob = viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isFindingRoute = true, errorMessage = null, origin = null, destination = null)
+            _uiState.value = _uiState.value.copy(isFindingRoute = true, errorMessage = null, recommendedPoiIds = null)
             _route.value = null
             _tripState.value = _tripState.value.copy(isActive = false)
 
             try {
-                // Geocoding song song
-                val (originPoint, destinationPoint) = getCoordinates(origin, destination)
-                _uiState.value = _uiState.value.copy(
-                    origin = PlaceWithCoord(origin, originPoint),
-                    destination = PlaceWithCoord(destination, destinationPoint)
-                )
-                // Tạo xe demo
-                val demoCar = EVCar(totalPowerKwh = 80.0, currentPowerKwh = 75.0, averageSpeedKmh = 60.0)
-
-                val originLocation = com.quest.evrouting.phone.domain.model.Location(
+                val originLocation = Location(
                     latitude = originPoint.latitude(),
                     longitude = originPoint.longitude()
                 )
-                val destinationLocation = com.quest.evrouting.phone.domain.model.Location(
+                val destinationLocation = Location(
                     latitude = destinationPoint.latitude(),
                     longitude = destinationPoint.longitude()
                 )
 
-                val newRoute = evRouteRepository.getRoute(
-                    current = originLocation,
-                    target = destinationLocation
+                val (newRoute, recommendedIds) = evRouteRepository.getRoute(
+                    start = originLocation,
+                    end = destinationLocation
                 )
 
                 if (newRoute != null && newRoute.decodedPolyline.isNotEmpty()) {
                     _route.value = newRoute
-                    _uiState.value = _uiState.value.copy(isFindingRoute = false)
-                    Log.d("DEBUG_ROUTE", "[ViewModel] Đã nhận lộ trình, bắt đầu lắng nghe mô phỏng từ UseCase.")
+                    Log.d("DEBUG_ROUTE", "[ViewModel] Đã nhận lộ trình, bắt đầu mô phỏng.")
 
+                    _uiState.value = _uiState.value.copy(isFindingRoute = false, recommendedPoiIds = recommendedIds.toSet())
+                    // Tạo xe demo để mô phỏng
+                    val demoCar = EVCar(totalPowerKwh = 80.0, currentPowerKwh = 75.0, averageSpeedKmh = 60.0)
                     simulateTripUseCase.execute(newRoute, demoCar, destinationPoint)
                         .collect { newState ->
                             _tripState.value = newState
                         }
-
                     Log.d("DEBUG_ROUTE", "[ViewModel] Flow mô phỏng đã kết thúc.")
 
                 } else {
@@ -220,13 +207,44 @@ class MapViewModel(
 
             } catch (e: Exception) {
                 if (e is kotlinx.coroutines.CancellationException) {
-                    Log.d("DEBUG_ROUTE", "[ViewModel] Job tìm đường và mô phỏng đã bị hủy.")
+                    Log.d("DEBUG_ROUTE", "[ViewModel] Job tìm đường đã bị hủy.")
                 } else {
                     Log.e("DEBUG_ROUTE", "[ViewModel] Lỗi trong quá trình tìm đường: ${e.message}", e)
                     _uiState.value = _uiState.value.copy(errorMessage = "Lỗi: ${e.message}")
                 }
             } finally {
                 _uiState.value = _uiState.value.copy(isFindingRoute = false)
+            }
+        }
+    }
+
+    fun findRouteFromPlaces(origin: Place, destination: Place) {
+        Log.d("DEBUG_ROUTE", "[ViewModel] Nhận yêu cầu: '${origin.primaryText}' -> '${destination.primaryText}'")
+
+        findAndSimulateJob?.cancel()
+
+        findAndSimulateJob = viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isFindingRoute = true, errorMessage = null, origin = null, destination = null)
+            _route.value = null
+            _tripState.value = _tripState.value.copy(isActive = false)
+
+            try {
+                val (originPoint, destinationPoint) = getCoordinates(origin, destination)
+                _uiState.value = _uiState.value.copy(
+                    origin = PlaceWithCoord(origin, originPoint),
+                    destination = PlaceWithCoord(destination, destinationPoint)
+                )
+
+                _cameraTarget.value = originPoint
+                findRouteFromCoordinates(originPoint, destinationPoint)
+
+            } catch (e: Exception) {
+                if (e is kotlinx.coroutines.CancellationException) {
+                    Log.d("DEBUG_ROUTE", "[ViewModel] Job tìm đường và mô phỏng đã bị hủy.")
+                } else {
+                    Log.e("DEBUG_ROUTE", "[ViewModel] Lỗi trong quá trình tìm đường: ${e.message}", e)
+                    _uiState.value = _uiState.value.copy(errorMessage = "Lỗi: ${e.message}")
+                }
             }
         }
     }

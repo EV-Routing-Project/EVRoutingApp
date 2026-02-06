@@ -5,7 +5,7 @@ import com.quest.evrouting.phone.domain.model.Path
 
 interface EVRouteRepository {
     suspend fun getRoute(
-        current: Location,
-        target: Location,
-    ): Path?
+        start: Location,
+        end: Location,
+    ): Pair<Path?, List<String>>
 }

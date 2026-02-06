@@ -68,11 +68,8 @@ class SearchViewModel : ViewModel() { // TODO: Sẽ inject Repository vào đây
 
     private fun loadRecentHistory() {
         val fakeHistory = listOf(
-            Place("1", "Sân Cầu Lông - Pickleball Kim Minh", "206/8A, Bình Quới..."),
-            Place("2", "Nhà thờ Đức Bà Sài Gòn", "Công trường Công xã Paris..."),
-            Place("3", "Quận 10", "Hồ Chí Minh City"),
-            Place("4","Orte (near A1 Motorway), Viterbo, Lazio, Italy",null),
-            Place("5","Rome City Center (Centro Storico), Lazio, Italy",null)
+            Place("1", "Colosseum (Roman Amphitheatre)", "Rome, Lazio, Italy"),
+            Place("2", "Modena City Center", "Modena, Emilia-Romagna, Italy")
         )
         _uiState.update { it.copy(recentHistory = fakeHistory) }
     }

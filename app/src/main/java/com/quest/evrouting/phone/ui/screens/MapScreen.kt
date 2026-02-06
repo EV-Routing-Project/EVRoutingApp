@@ -2,62 +2,53 @@ package com.quest.evrouting.phone.ui.screens
 
 import android.util.Log
 import android.widget.Toast
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.gson.JsonPrimitive
+import com.mapbox.maps.EdgeInsets
 import com.mapbox.maps.MapboxDelicateApi
+import com.mapbox.maps.dsl.cameraOptions
+import com.mapbox.maps.extension.compose.MapEffect
 import com.mapbox.maps.extension.compose.MapboxMap
 import com.mapbox.maps.extension.compose.animation.viewport.rememberMapViewportState
 import com.mapbox.maps.extension.compose.annotation.generated.PointAnnotation
+import com.mapbox.maps.extension.compose.annotation.generated.PolylineAnnotation
 import com.mapbox.maps.extension.compose.annotation.rememberIconImage
 import com.mapbox.maps.extension.compose.style.standard.LightPresetValue
 import com.mapbox.maps.extension.compose.style.standard.MapboxStandardStyle
 import com.mapbox.maps.extension.compose.style.standard.ThemeValue
 import com.mapbox.maps.extension.compose.style.standard.rememberStandardStyleState
-import com.quest.evrouting.phone.R
-import com.quest.evrouting.phone.configuration.AppConfig
-import com.quest.evrouting.phone.ui.viewmodel.MapViewModel
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import com.google.gson.JsonPrimitive
-import com.mapbox.maps.extension.compose.MapEffect
 import com.mapbox.maps.extension.style.layers.properties.generated.LineJoin
-import com.mapbox.maps.extension.compose.annotation.generated.PolylineAnnotation
+import com.mapbox.maps.plugin.animation.MapAnimationOptions
 import com.mapbox.maps.plugin.annotation.annotations
 import com.mapbox.maps.plugin.annotation.generated.PointAnnotationManager
 import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions
 import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
+import com.quest.evrouting.phone.R
+import com.quest.evrouting.phone.configuration.AppConfig
 import com.quest.evrouting.phone.domain.model.Place
 import com.quest.evrouting.phone.ui.components.SearchTopBar
+import com.quest.evrouting.phone.ui.viewmodel.MapViewModel
 import com.quest.evrouting.phone.ui.viewmodel.UiEvent
 import com.quest.evrouting.phone.util.drawableToBitmap
 
-
-@OptIn(MapboxDelicateApi::class)
+@OptIn(MapboxDelicateApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun MapScreen(
     viewModel: MapViewModel = viewModel(factory = AppConfig.mapViewModelFactory),
@@ -70,61 +61,80 @@ fun MapScreen(
     val uiState by viewModel.uiState
     val route by viewModel.route
     val tripState by viewModel.tripState.collectAsState()
+    val cameraTarget by viewModel.cameraTarget.collectAsState()
     val uiEvent = viewModel.uiEvent
+    val sheetState = rememberModalBottomSheetState()
 
+    val markerDefaultBitmap = remember(context) { drawableToBitmap(context, R.drawable.charging_station) }
+    val markerOnRouteBitmap = remember(context) { drawableToBitmap(context, R.drawable.charging_station2) }
 
-    // Cài đặt camera ban đầu và điều khiển nó
+    // State quản lý Annotation Manager
+    val annotationManagerRef = remember { mutableStateOf<PointAnnotationManager?>(null) }
+
+    // Bottom Sheet hiển thị POI
+    if (uiState.selectedPoi != null) {
+        ModalBottomSheet(
+            onDismissRequest = { viewModel.onPoiDetailsDismissed() },
+            sheetState = sheetState
+        ) {
+            PoiDetailsSheetContent(poi = uiState.selectedPoi!!)
+        }
+    }
+
     val mapViewportState = rememberMapViewportState {
         setCameraOptions {
             zoom(11.0)
-            center(uiState.centerCoordinate) // Lấy tọa độ từ ViewModel
+            center(uiState.centerCoordinate)
             pitch(61.01)
             bearing(15.77)
         }
     }
 
-    LaunchedEffect(key1 = true) {
+    // Xử lý Toast Events
+    LaunchedEffect(Unit) {
         uiEvent.collect { event ->
             when (event) {
-                is UiEvent.ShowToast -> {
-                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
-                }
+                is UiEvent.ShowToast -> Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
             }
         }
     }
 
+    // Xử lý tìm đường khi có Origin/Destination mới
     LaunchedEffect(newOrigin, newDestination) {
         if (newOrigin != null && newDestination != null) {
-            Log.d("DEBUG_ROUTE", "[MapScreen] Nhận được yêu cầu tìm đường.")
-            Log.d("DEBUG_ROUTE", " -> Origin: ${newOrigin.primaryText}")
-            Log.d("DEBUG_ROUTE", " -> Origin: ${newOrigin.secondaryText}")
-            Log.d("DEBUG_ROUTE", " -> Destination: ${newDestination.primaryText}")
-            Log.d("DEBUG_ROUTE", " -> Destination: ${newDestination.secondaryText}")
-
             viewModel.findRouteFromPlaces(newOrigin, newDestination)
             onNewRouteHandled()
+        }
+    }
+
+    // Xử lý Camera FlyTo
+    LaunchedEffect(cameraTarget) {
+        cameraTarget?.let { targetPoint ->
+            mapViewportState.flyTo(
+                cameraOptions = cameraOptions {
+                    center(targetPoint)
+                    zoom(14.0)
+                    padding(EdgeInsets(100.0, 40.0, 100.0, 40.0))
+                },
+                animationOptions = MapAnimationOptions.mapAnimationOptions { duration(1500L) }
+            )
+            viewModel.onCameraTargetHandled()
         }
     }
 
     Scaffold(
         floatingActionButton = {
             Column(horizontalAlignment = Alignment.End) {
-                // Nút 1: Tìm lộ trình tuần tự
                 if (newOrigin != null && newDestination != null) {
                     FloatingActionButton(
                         onClick = { viewModel.findRouteFromPlaces(newOrigin, newDestination) },
                         shape = RoundedCornerShape(16.dp),
                     ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.List,
-                            contentDescription = stringResource(R.string.find_sequential_route_description)
-                        )
+                        Icon(Icons.AutoMirrored.Filled.List, contentDescription = null)
                     }
-
                     Spacer(Modifier.height(16.dp))
                 }
 
-                // Nút 2: Căn giữa bản đồ
                 FloatingActionButton(
                     onClick = {
                         val (cameraOptions, animationOptions) = viewModel.onRecenterMapClicked()
@@ -132,20 +142,12 @@ fun MapScreen(
                     },
                     shape = RoundedCornerShape(16.dp),
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Refresh,
-                        contentDescription = stringResource(R.string.recenter_map_description)
-                    )
+                    Icon(Icons.Default.Refresh, contentDescription = null)
                 }
             }
         }
     ) { innerPadding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-//            contentAlignment = Alignment.Center
-        ) {
+        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
             MapboxMap(
                 Modifier.fillMaxSize(),
                 mapViewportState = mapViewportState,
@@ -160,132 +162,96 @@ fun MapScreen(
                     )
                 }
             ) {
-//                val markerDefault = rememberIconImage(R.drawable.charging_station) // Icon mặc định
-//                val markerOnRoute = rememberIconImage(R.drawable.baseline_location_on_24) // Icon cho điểm trên lộ trình
-//
-//                val pointsOnRoute = route?.decodedPolyline?.toSet() ?: emptySet()
-//
-//                uiState.pois.forEach { poi ->
-//                    // Thêm key() để tăng hiệu suất khi danh sách thay đổi
-//                    key(poi.id) {
-//                        val poiPoint = poi.location.toPoint()
-//                        PointAnnotation(point = poiPoint) {
-//                            iconImage = if (pointsOnRoute.contains(poiPoint)) markerOnRoute else markerDefault
-//                            iconSize = 0.2
-//                            interactionsState.onClicked {
-//                                viewModel.onPoiClicked(poi)
-//                                true
-//                            }
-//                        }
-//                    }
-//                }
-
-                val localContext = LocalContext.current
-
-                val markerDefaultBitmap = remember(localContext) {
-                    drawableToBitmap(
-                        localContext,
-                        R.drawable.charging_station
-                    )
-                }
-                val markerOnRouteBitmap = remember(localContext) {
-                    drawableToBitmap(
-                        localContext,
-                        R.drawable.baseline_location_on_24
-                    )
-                }
-                val annotationManagerRef = remember { mutableStateOf<PointAnnotationManager?>(null) }
-
-                DisposableEffect(Unit) {
-                    onDispose {
-                        annotationManagerRef.value?.deleteAll()
-                    }
-                }
-
                 MapEffect(Unit) { mapView ->
                     if (annotationManagerRef.value == null) {
                         annotationManagerRef.value = mapView.annotations.createPointAnnotationManager()
                     }
                 }
 
-                LaunchedEffect(annotationManagerRef.value, uiState.pois, route) {
+                val hasListener = remember { mutableStateOf(false) }
+
+                LaunchedEffect(uiState.pois, uiState.recommendedPoiIds, annotationManagerRef.value, route) {
                     val manager = annotationManagerRef.value ?: return@LaunchedEffect
-
-                    val pointsOnRoute = route?.decodedPolyline?.toSet() ?: emptySet()
-
                     manager.deleteAll()
 
-                    val poiOptions = uiState.pois.map { poi ->
-                        val point = poi.location.toPoint()
-                        val isOnRoute = pointsOnRoute.contains(point)
+                    val groupedByPoint = uiState.pois.groupBy { it.location.toPoint() }
+
+                    val poiOptions = groupedByPoint.map { (point, poisAtSameLocation) ->
+                        val hasRecommended = poisAtSameLocation.any {
+                            uiState.recommendedPoiIds?.contains(it.id) == true
+                        }
+
                         PointAnnotationOptions()
                             .withPoint(point)
-                            .withIconImage(if (isOnRoute) markerOnRouteBitmap else markerDefaultBitmap)
+                            .withIconImage(
+                                if (hasRecommended) markerOnRouteBitmap
+                                else markerDefaultBitmap
+                            )
                             .withIconSize(0.08)
-                            // Thêm ID vào data để xử lý click
-                            .withData(JsonPrimitive(poi.id))
+                            // lưu toàn bộ ids tại vị trí này
+                            .withData(
+                                JsonPrimitive(
+                                    poisAtSameLocation.joinToString(",") { it.id }
+                                )
+                            )
                     }
-                    manager.create(poiOptions)
 
-                    manager.addClickListener { annotation ->
-                        val poiId = annotation.getData()?.asString
-                        if (poiId != null) {
-                            val clickedPoi = uiState.pois.find { it.id == poiId }
-                            if (clickedPoi != null) {
-                                viewModel.onPoiClicked(clickedPoi)
-                                return@addClickListener true
-                            }
+                    if (poiOptions.isNotEmpty()) {
+                        manager.create(poiOptions)
+                    }
+
+                    if (!hasListener.value) {
+                        manager.addClickListener { annotation ->
+                            val ids = annotation.getData()?.asString?.split(",") ?: return@addClickListener false
+                            val firstPoi = uiState.pois.firstOrNull { it.id == ids.first() }
+                            if (firstPoi != null) {
+                                viewModel.onPoiClicked(firstPoi)
+                                true
+                            } else false
                         }
-                        false
+
+                        hasListener.value = true
+                        Log.d("MARKER_DEBUG", "Added click listener to manager")
                     }
                 }
 
-
-                // Vẽ lộ trình nếu có
-                route?.let { aRoute ->
-                    PolylineAnnotation(points = aRoute.decodedPolyline) {
-                        lineColor = Color.Blue
+                route?.let { path ->
+                    PolylineAnnotation(points = path.decodedPolyline) {
+                        lineColor = Color(0xFF2196F3)
                         lineWidth = 6.0
                         lineOpacity = 0.8
                         lineJoin = LineJoin.ROUND
                     }
                 }
 
-
                 val carIcon = rememberIconImage(R.drawable.car2)
-                val originIcon = rememberIconImage(R.drawable.car)
+                val originIcon = rememberIconImage(R.drawable.user_location)
                 val destinationIcon = rememberIconImage(R.drawable.pin)
 
                 if (tripState.isActive) {
-                    PointAnnotation(point = tripState.currentLocation) // Lấy vị trí từ TripState
-                    {
+                    PointAnnotation(point = tripState.currentLocation) {
                         iconImage = carIcon
                         iconSize = 0.2
                     }
                 }
 
-                // Vẽ điểm origin
-                uiState.origin?.let { placeWithCoord ->
-                    PointAnnotation(point = placeWithCoord.point){
-                        iconImage = originIcon
-                        iconSize = 0.2
-                    }
-                }
-
-                // Vẽ điểm destination
-                uiState.destination?.let { placeWithCoord ->
-                    PointAnnotation(point = placeWithCoord.point){
-                        iconImage = destinationIcon
-                        iconSize = 0.2
+                route?.decodedPolyline?.let { points ->
+                    if (points.isNotEmpty()) {
+                        PointAnnotation(point = points.first()) {
+                            iconImage = originIcon
+                            iconSize = 0.2
+                        }
+                        PointAnnotation(point = points.last()) {
+                            iconImage = destinationIcon
+                            iconSize = 0.2
+                        }
                     }
                 }
             }
 
             SearchTopBar(
                 onSearchClick = onSearchClick,
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(16.dp)
+                modifier = Modifier.align(Alignment.TopCenter).padding(16.dp)
             )
 
             if (uiState.isLoading) {
@@ -293,14 +259,49 @@ fun MapScreen(
             }
 
             uiState.errorMessage?.let { message ->
-                Text(
-                    text = message,
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(16.dp),
-                    color = Color.Red
-                )
+                Surface(
+                    modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 80.dp),
+                    color = Color.Black.copy(alpha = 0.7f),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(text = message, color = Color.White, modifier = Modifier.padding(8.dp))
+                }
             }
         }
+    }
+}
+
+@Composable
+fun PoiDetailsSheetContent(poi: com.quest.evrouting.phone.domain.model.POI) {
+    LazyColumn(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 16.dp)
+    ) {
+        item {
+            Text("Thông Tin Trạm Sạc", fontSize = 22.sp, fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
+        item {
+            Text("Trạng thái: ${poi.status}", fontSize = 16.sp)
+            poi.information["address"]?.let { Text("Địa chỉ: $it", fontSize = 16.sp) }
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
+        item {
+            Text("Các Cổng Sạc", fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        if (poi.connectors.isEmpty()) {
+            item { Text("- Không có thông tin cổng sạc.") }
+        } else {
+            items(poi.connectors) { connector ->
+                Column(modifier = Modifier.padding(vertical = 8.dp)) {
+                    Text("• Loại: ${connector.connectorType}")
+                    Text("  Công suất: ${connector.maxElectricPower} W")
+                }
+            }
+        }
+        item { Spacer(modifier = Modifier.height(32.dp)) }
     }
 }
